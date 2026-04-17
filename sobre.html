@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="pt-AO" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
+<meta name="theme-color" content="#0d0d1a"/>
+<title>Sobre Nós</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#0d0d1a;--bg2:#14142b;--card:#1a1a32;--border:#2a2a4a;--pink:#ff6b9d;--purple:#b14ae8;--teal:#06d6a0;--yellow:#ffd166;--coral:#ff9f43;--red:#ff4757;--white:#fff;--muted:#9898bb;--muted2:#4a4a6a;--ft:'Fredoka One',cursive;--fb:'Nunito',sans-serif;--r:14px;--tr:all .3s cubic-bezier(.4,0,.2,1);--grad:linear-gradient(135deg,#ff6b9d,#b14ae8)}
+[data-theme="light"]{--bg:#fff5f8;--bg2:#fff;--card:#fff;--border:#f0d6e8;--white:#1a0a2e;--muted:#7a5a8a;--muted2:#ccc}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--fb);background:var(--bg);color:var(--white);min-height:100vh;padding-bottom:80px;transition:background .35s,color .35s}
+.hdr{position:sticky;top:0;z-index:100;background:rgba(13,13,26,.97);backdrop-filter:blur(24px);border-bottom:1px solid var(--border);padding:10px 14px;display:flex;align-items:center;gap:10px;transition:background .35s}
+[data-theme="light"] .hdr{background:rgba(255,245,248,.97)}
+.btn-bk{width:32px;height:32px;border-radius:50%;background:none;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:.9rem;cursor:pointer;color:var(--white)}
+.hdr-nome{font-family:var(--ft);font-size:1.1rem;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;flex:1;text-align:center}
+.hb{width:32px;height:32px;border-radius:50%;background:none;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:.82rem;cursor:pointer;color:var(--white)}
+.ctn{padding:16px;max-width:480px;margin:0 auto}
+/* HERO */
+.hero{background:var(--grad);border-radius:20px;padding:26px 18px;text-align:center;margin-bottom:14px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-30px;right:-20px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.1)}
+.hero-logo{width:72px;height:72px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:2rem;margin:0 auto 12px;border:2px solid rgba(255,255,255,.3);overflow:hidden}
+.hero-logo img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.hero h1{font-family:var(--ft);font-size:1.6rem;color:#fff;margin-bottom:4px}
+.hero p{font-size:.82rem;color:rgba(255,255,255,.8);line-height:1.5}
+/* CARD */
+.card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:16px;margin-bottom:12px}
+.card-h{font-family:var(--ft);font-size:1rem;color:var(--pink);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.card p{font-size:.86rem;color:var(--muted);line-height:1.7;margin-bottom:10px}
+.card p:last-child{margin-bottom:0}
+/* CONTACTO */
+.ct-item{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);font-size:.85rem}
+.ct-item:last-child{border-bottom:none}
+.ct-item i{width:22px;color:var(--pink);font-size:.95rem;flex-shrink:0}
+.ct-item a{color:var(--pink);text-decoration:none}
+.ct-item span{color:var(--muted)}
+/* REDES */
+.redes{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+.rede{width:44px;height:44px;border-radius:50%;background:var(--bg2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--white);font-size:1.15rem;text-decoration:none;transition:var(--tr)}
+.rede:hover{background:var(--pink);border-color:var(--pink);color:#fff}
+/* HORÁRIOS */
+.hr-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.hr-item{display:flex;justify-content:space-between;padding:8px 10px;background:var(--bg2);border-radius:10px;font-size:.78rem}
+.hr-item span:first-child{color:var(--muted);font-weight:600}
+/* ENTREGA */
+.ent-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;background:rgba(6,214,160,.08);border:1px solid rgba(6,214,160,.2);border-radius:50px;font-size:.72rem;color:var(--teal);margin-bottom:10px}
+/* WA BUTTON */
+.btn-wa{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:14px;background:linear-gradient(135deg,#128c7e,#25d366);border:none;border-radius:50px;font-family:var(--ft);font-size:.95rem;color:#fff;cursor:pointer;text-decoration:none;margin-top:6px;box-shadow:0 4px 14px rgba(37,211,102,.3);transition:var(--tr)}
+.btn-wa:hover{filter:brightness(1.1)}
+/* NAV */
+.nav{position:fixed;bottom:0;left:0;right:0;z-index:200;padding:6px 12px 12px;display:flex;gap:8px;align-items:center;background:rgba(13,13,26,.97);backdrop-filter:blur(24px);border-top:1px solid var(--border)}
+[data-theme="light"] .nav{background:rgba(255,245,248,.97)}
+.btn-home-nav{width:42px;height:42px;flex-shrink:0;background:var(--card);border:1px solid var(--border);border-radius:50%;font-size:.9rem;cursor:pointer;color:var(--white);display:flex;align-items:center;justify-content:center}
+.btn-cat-nav{flex:1;height:42px;border:none;background:var(--grad);border-radius:50px;font-family:var(--ft);font-size:.78rem;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 14px rgba(255,107,157,.3)}
+/* SPINNER */
+.spin{width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--pink);border-radius:50%;animation:sp .8s linear infinite;margin:40px auto;display:block}
+@keyframes sp{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<header class="hdr">
+  <button class="btn-bk" onclick="history.back()"><i class="fa-solid fa-arrow-left"></i></button>
+  <div class="hdr-nome" id="hdrNome">Sobre Nós</div>
+  <button class="hb" onclick="toggleTheme()"><i class="fa-solid fa-sun" id="themeIco"></i></button>
+</header>
+
+<div class="ctn" id="ctn"><div class="spin"></div></div>
+
+<div class="nav">
+  <button class="btn-home-nav" onclick="location.href='index.html'"><i class="fa-solid fa-house"></i></button>
+  <button class="btn-cat-nav" onclick="location.href='catalogo.html'">
+    <i class="fa-solid fa-store"></i> Ver Catálogo
+  </button>
+</div>
+
+<script src="catalogo.js?v=1"></script>
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+  initTheme(); _syncThemeIcons();
+  await initCatalogo();
+  const l = getLoja();
+  document.getElementById('hdrNome').textContent = l.nome || 'Sobre Nós';
+  document.title = 'Sobre | ' + (l.nome || '');
+  renderSobre(l);
+});
+
+function renderSobre(l) {
+  const waNum = (l.whatsapp || '').replace(/\D/g, '');
+  // Horários
+  const dias = [
+    { k: 'seg', label: 'Segunda' }, { k: 'ter', label: 'Terça' },
+    { k: 'qua', label: 'Quarta' },  { k: 'qui', label: 'Quinta' },
+    { k: 'sex', label: 'Sexta' },   { k: 'sab', label: 'Sábado' },
+    { k: 'dom', label: 'Domingo' },
+  ];
+  const horariosHtml = dias.filter(d => l.horarios?.[d.k]).map(d =>
+    `<div class="hr-item"><span>${d.label}</span><span>${l.horarios[d.k]}</span></div>`
+  ).join('');
+  // Redes sociais
+  const redes = [
+    { k: 'instagram', ico: 'fa-brands fa-instagram', href: l.instagram },
+    { k: 'facebook',  ico: 'fa-brands fa-facebook',  href: l.facebook },
+    { k: 'tiktok',    ico: 'fa-brands fa-tiktok',    href: l.tiktok },
+    { k: 'youtube',   ico: 'fa-brands fa-youtube',   href: l.youtube },
+  ].filter(r => r.href);
+  const redesHtml = redes.map(r =>
+    `<a href="${r.href}" class="rede" target="_blank"><i class="${r.ico}"></i></a>`
+  ).join('');
+
+  document.getElementById('ctn').innerHTML = `
+    <div class="hero">
+      <div class="hero-logo">
+        ${l.logo ? `<img src="${l.logo}" alt="${l.nome}">` : '🏪'}
+      </div>
+      <h1>${l.nome || 'A Nossa Loja'}</h1>
+      ${l.descricao ? `<p>${l.descricao}</p>` : ''}
+    </div>
+
+    ${l.sobre ? `
+    <div class="card">
+      <div class="card-h"><i class="fa-solid fa-store"></i> Quem Somos</div>
+      <p>${l.sobre}</p>
+    </div>` : ''}
+
+    <div class="card">
+      <div class="card-h"><i class="fa-solid fa-address-card"></i> Contacto</div>
+      ${l.telefone ? `<div class="ct-item"><i class="fa-solid fa-phone"></i><span><a href="tel:${l.telefone}">${l.telefone}</a></span></div>` : ''}
+      ${waNum ? `<div class="ct-item"><i class="fa-brands fa-whatsapp"></i><span><a href="https://wa.me/${waNum}">${l.whatsapp}</a></span></div>` : ''}
+      ${l.email ? `<div class="ct-item"><i class="fa-regular fa-envelope"></i><span><a href="mailto:${l.email}">${l.email}</a></span></div>` : ''}
+      ${l.morada ? `<div class="ct-item"><i class="fa-solid fa-location-dot"></i><span>${l.morada}${l.cidade ? ', ' + l.cidade : ''}${l.provincia ? ' — ' + l.provincia : ''}</span></div>` : ''}
+      ${redesHtml ? `<div class="redes">${redesHtml}</div>` : ''}
+      ${waNum ? `<a href="https://wa.me/${waNum}?text=Olá! Gostaria de mais informações." class="btn-wa" target="_blank"><i class="fa-brands fa-whatsapp" style="font-size:1.3rem"></i> Falar pelo WhatsApp</a>` : ''}
+    </div>
+
+    ${horariosHtml ? `
+    <div class="card">
+      <div class="card-h"><i class="fa-regular fa-clock"></i> Horários</div>
+      <div class="hr-grid">${horariosHtml}</div>
+    </div>` : ''}
+
+    ${l.entrega_ativa ? `
+    <div class="card">
+      <div class="card-h"><i class="fa-solid fa-truck"></i> Entregas</div>
+      <div class="ent-badge"><i class="fa-solid fa-check"></i> Entrega ao domicílio disponível</div>
+      <p>${l.entrega_preco > 0 ? `Taxa de entrega: <strong>${kz(l.entrega_preco)}</strong>` : 'Entrega gratuita'}${l.entrega_gratis > 0 ? ` · Grátis a partir de ${kz(l.entrega_gratis)}` : ''}</p>
+      ${l.entrega_prazo ? `<p>⏱️ Prazo: ${l.entrega_prazo}</p>` : ''}
+      ${l.entrega_zonas ? `<p>📍 Zonas: ${l.entrega_zonas}</p>` : ''}
+    </div>` : ''}
+
+    ${l.politica || l.termos ? `
+    <div class="card">
+      <div class="card-h"><i class="fa-solid fa-shield-halved"></i> Políticas</div>
+      ${l.politica ? `<p>${l.politica}</p>` : ''}
+      ${l.termos ? `<p>${l.termos}</p>` : ''}
+    </div>` : ''}
+  `;
+}
+
+function toggleTheme() {
+  const t = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', t);
+  localStorage.setItem('tema', t);
+  document.getElementById('themeIco').className = t === 'dark' ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+}
+function initTheme() {
+  const t = localStorage.getItem('tema') || 'dark';
+  document.documentElement.setAttribute('data-theme', t);
+}
+function _syncThemeIcons() {
+  const t = document.documentElement.getAttribute('data-theme') || 'dark';
+  document.getElementById('themeIco').className = t === 'dark' ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+}
+</script>
+</body>
+</html>
