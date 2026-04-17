@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="pt-AO" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<script>
+// Registar Service Worker — garante sempre ficheiros frescos do servidor
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('./sw.js').catch(()=>{});
+}
+// Ouvir mensagem do Service Worker — recarregar quando há nova versão
+navigator.serviceWorker.addEventListener('message',function(e){
+  if(e.data&&e.data.type==='SW_UPDATED'){
+    if(!sessionStorage.getItem('_cf_sw_reloaded')){
+      sessionStorage.setItem('_cf_sw_reloaded','1');
+      location.reload();
+    }
+  }
+});
+// Se catalogo.js falhou (ecrã preto) — detectar e forçar reload sem cache
+window.addEventListener('load', function(){
+  if(typeof LOJA_DEFAULT==='undefined'||typeof getLoja==='undefined'){
+    // catalogo.js não carregou correctamente — limpar cache e recarregar
+    if(!sessionStorage.getItem('_cf_reloaded')){
+      sessionStorage.setItem('_cf_reloaded','1');
+      if('caches' in window){
+        caches.keys().then(function(keys){
+          return Promise.all(keys.map(function(k){return caches.delete(k);}));
+        }).then(function(){
+          location.replace(location.pathname+'?_v='+Date.now());
+        });
+      } else {
+        location.replace(location.pathname+'?_v='+Date.now());
+      }
+    } else {
+      // Segunda tentativa falhou — NÃO remover o flag (evita loop infinito)
+      // Marcar como 'failed' e mostrar erro visível ao utilizador
+      sessionStorage.setItem('_cf_reloaded','failed');
+      if(document.body&&!document.getElementById('_cf_load_err')){
+        var d=document.createElement('div');
+        d.id='_cf_load_err';
+        d.style.cssText='position:fixed;inset:0;background:#0d0d1a;color:#ff6b9d;font-family:sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;z-index:99999';
+        d.innerHTML='<div style="font-size:2rem;margin-bottom:12px">⚠️</div><div style="font-size:1rem;font-weight:700;margin-bottom:8px">Erro ao carregar o site</div><div style="font-size:.8rem;opacity:.7;margin-bottom:20px">Verifique a sua ligação à internet e tente novamente.</div><button onclick="sessionStorage.clear();location.reload(true)" style="padding:10px 24px;background:#ff6b9d;border:none;border-radius:50px;color:#fff;font-size:.85rem;cursor:pointer">🔄 Tentar novamente</button>';
+        document.body.appendChild(d);
+      }
+    }
+  } else {
+    sessionStorage.removeItem('_cf_reloaded');
+  }
+});
+</script>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+<meta http-equiv="Pragma" content="no-cache"/>
+<meta http-equiv="Expires" content="0"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Produto | CONFETI</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml"/>
+<script>(function(){var t=localStorage.getItem('cf_theme')||'dark';document.documentElement.setAttribute('data-theme',t);})()</script>
+<script>(function(){
+  try{
+    var l=JSON.parse(localStorage.getItem('cf_loja')||'{}');
+    var n=l.nome;
+    if(n){
+      // Aplicar imediatamente quando o elemento existir
+      function _aplicarNome(){
+        document.querySelectorAll('[data-loja-nome]').forEach(function(el){el.textContent=n;});
+        var t=document.title;
+        if(t&&t.indexOf('CONFETI')>=0)document.title=t.replace('CONFETI',n);
+      }
+      // Tentar imediatamente + no DOMContentLoaded como fallback
+      document.addEventListener('DOMContentLoaded',_aplicarNome);
+      // MutationObserver para apanhar elementos criados dinamicamente
+      var obs=new MutationObserver(function(){
+        var els=document.querySelectorAll('[data-loja-nome]');
+        if(els.length){els.forEach(function(el){el.textContent=n;});}
+      });
+      obs.observe(document.documentElement,{childList:true,subtree:true});
+      // Parar observer após carregar
+      document.addEventListener('DOMContentLoaded',function(){obs.disconnect();});
+    }
+  }catch(_){}
+})()</script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#0d0d1a;--bg2:#14142b;--card:#1a1a32;--border:#2a2a4a;--pink:#ff6b9d;--purple:#b14ae8;--teal:#06d6a0;--yellow:#ffd166;--coral:#ff9f43;--red:#ff4757;--white:#fff;--muted:#9898bb;--muted2:#4a4a6a;--ft:'Fredoka One',cursive;--fb:'Nunito',sans-serif;--r:14px;--tr:all .3s cubic-bezier(.4,0,.2,1);--grad:linear-gradient(135deg,#ff6b9d,#b14ae8)}
+[data-theme="light"]{--bg:#fff5f8;--bg2:#fff;--card:#fff;--border:#f0d6e8;--white:#1a0a2e;--muted:#7a5a8a;--muted2:#ccc}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--fb);background:var(--bg);color:var(--white);min-height:100vh;padding-bottom:66px;transition:background .35s,color .35s}
+.hdr{position:sticky;top:0;z-index:100;background:rgba(13,13,26,.97);backdrop-filter:blur(24px);border-bottom:1px solid var(--border);padding:11px 14px;display:flex;align-items:center;gap:10px;transition:background .35s}
+[data-theme="light"] .hdr{background:rgba(255,245,248,.97)}
+.btn-bk{width:34px;height:34px;border-radius:50%;background:none;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:.9rem;cursor:pointer;color:var(--white);transition:var(--tr);flex-shrink:0}
+.hdr-titulo{font-family:var(--ft);font-size:.85rem;color:var(--muted);flex:1;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.btn-th{width:32px;height:32px;border-radius:50%;background:none;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:.85rem;cursor:pointer;flex-shrink:0;color:var(--white)}
+.prod-hero{width:100%;aspect-ratio:1;max-height:360px;background:var(--bg2);display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative}
+.prod-hero img{width:100%;height:100%;object-fit:cover}
+.prod-emoji-big{font-size:9rem;animation:pulse 3s ease-in-out infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+/* Carrossel */
+.carousel{width:100%;aspect-ratio:1;max-height:360px;overflow:hidden;position:relative;background:var(--bg2)}
+.carousel-track{display:flex;width:100%;height:100%;transition:transform .35s cubic-bezier(.4,0,.2,1);will-change:transform}
+.carousel-slide{min-width:100%;height:100%;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;background:var(--bg2)}
+.carousel-slide img{width:100%;height:100%;object-fit:cover}
+.carousel-slide span{font-size:9rem}
+.carousel-dots{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);display:flex;gap:5px;z-index:10}
+.carousel-dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.4);cursor:pointer;transition:all .2s}
+.carousel-dot.on{background:#fff;width:18px;border-radius:3px}
+.carousel-btn{position:absolute;top:50%;transform:translateY(-50%);width:32px;height:32px;border-radius:50%;background:rgba(13,13,26,.7);border:1px solid rgba(255,255,255,.2);color:#fff;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:10;backdrop-filter:blur(4px)}
+.carousel-btn.prev{left:10px}.carousel-btn.next{right:10px}
+.tag-strip{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:flex-start;padding:12px}
+.prod-tag{padding:4px 12px;font-family:var(--ft);font-size:.56rem;border-radius:50px}
+.prod-tag.promo{background:var(--red);color:#fff}
+.prod-tag.novo{background:var(--teal);color:#0d0d1a}
+.prod-tag.destaque{background:var(--grad);color:#fff}
+.btn-zoom{padding:7px 14px;background:rgba(13,13,26,.85);border:1px solid rgba(255,255,255,.2);border-radius:50px;font-family:var(--ft);font-size:.6rem;color:#fff;cursor:pointer;backdrop-filter:blur(8px)}
+.pd{padding:18px 16px 8px}
+.pd-cat{font-size:.56rem;font-weight:700;text-transform:uppercase;color:var(--pink);opacity:.8;margin-bottom:3px}
+.pd-nome{font-family:var(--ft);font-size:1.8rem;color:var(--white);line-height:1.1;margin-bottom:8px}
+.pd-preco{font-family:var(--ft);font-size:1.3rem;color:var(--pink);margin-bottom:5px}
+.pd-preco.orcamento{color:var(--coral)}
+.pd-orig-row{display:flex;align-items:center;gap:6px;margin-bottom:8px}
+.pd-orig{font-size:.86rem;color:var(--muted2);text-decoration:line-through}
+.pd-pct{padding:2px 8px;background:var(--red);color:#fff;font-family:var(--ft);font-size:.6rem;border-radius:6px}
+.pd-desc{font-size:.86rem;color:var(--muted);line-height:1.65;font-style:italic;margin-bottom:10px}
+.pd-dests{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px}
+.pd-dest-it{padding:4px 10px;background:rgba(255,107,157,.08);border:1px solid rgba(255,107,157,.2);border-radius:50px;font-size:.66rem;color:var(--pink)}
+.divd{height:1px;background:var(--border);margin:14px 16px}
+.sec{padding:0 16px;margin-bottom:16px}
+.sec-t{font-size:.58rem;font-weight:700;text-transform:uppercase;color:var(--muted);letter-spacing:.5px;margin-bottom:10px}
+.nota-input{width:100%;min-height:68px;padding:11px 13px;background:var(--bg2);border:1.5px solid var(--border);border-radius:12px;font-family:var(--fb);font-size:.83rem;color:var(--white);resize:none;outline:none;line-height:1.5;transition:border-color .2s}
+.nota-input:focus{border-color:rgba(255,107,157,.4)}
+.nota-input::placeholder{color:var(--muted2)}
+.qty-row{display:flex;align-items:center}
+.qty-btn{width:38px;height:38px;border-radius:50%;border:1.5px solid var(--border);background:none;font-size:1.2rem;font-weight:700;color:var(--white);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:var(--tr)}
+.qty-btn:hover{background:var(--pink);border-color:var(--pink)}
+.qty-val{min-width:50px;text-align:center;font-family:var(--ft);font-size:1.1rem;color:var(--white)}
+.specs-card{border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.spec-row{display:flex;gap:12px;padding:10px 14px;border-bottom:1px solid var(--border)}
+.spec-row:last-child{border-bottom:none}
+.spec-k{font-size:.6rem;font-weight:700;text-transform:uppercase;color:var(--muted);min-width:100px;flex-shrink:0;letter-spacing:.3px;padding-top:2px}
+.spec-v{font-size:.82rem;color:var(--white);line-height:1.4}
+.related-scroll{overflow-x:auto;scrollbar-width:none;margin:0 -16px;padding:2px 16px 6px}
+.related-scroll::-webkit-scrollbar{display:none}
+.related-inner{display:flex;gap:10px;width:max-content}
+.rcard{width:112px;background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;cursor:pointer;transition:var(--tr);flex-shrink:0}
+.rcard:hover{border-color:rgba(255,107,157,.35);transform:translateY(-2px)}
+.rcard-img{width:100%;height:90px;background:var(--bg2);display:flex;align-items:center;justify-content:center;font-size:2rem;overflow:hidden}
+.rcard-img img{width:100%;height:100%;object-fit:cover}
+.rcard-body{padding:7px 9px 10px}
+.rcard-nome{font-family:var(--ft);font-size:.76rem;color:var(--white);line-height:1.2;margin-bottom:3px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.rcard-preco{font-family:var(--ft);font-size:.74rem;color:var(--pink)}
+.lightbox{position:fixed;inset:0;z-index:600;background:rgba(0,0,0,.97);display:none;align-items:center;justify-content:center;padding:20px}
+.lightbox.on{display:flex}
+.lb-img{max-width:100%;max-height:90vh;object-fit:contain;border-radius:14px}
+.lb-emoji{font-size:10rem}
+.lb-close{position:absolute;top:14px;right:14px;width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.12);border:none;color:#fff;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.nav{position:fixed;bottom:0;left:0;right:0;z-index:200;padding:6px 12px 10px;display:flex;gap:8px;align-items:center;background:rgba(13,13,26,.97);backdrop-filter:blur(24px);border-top:1px solid var(--border);transition:background .35s}
+[data-theme="light"] .nav{background:rgba(255,245,248,.97)}
+.btn-cart-ico{width:40px;height:40px;flex-shrink:0;background:var(--bg2);border:1px solid var(--border);border-radius:50%;font-size:1rem;cursor:pointer;color:var(--white);display:flex;align-items:center;justify-content:center;position:relative}
+.badge-n{position:absolute;top:-3px;right:-3px;background:var(--red);color:#fff;border-radius:50%;width:15px;height:15px;font-size:.5rem;font-weight:700;display:none;align-items:center;justify-content:center}
+.badge-n.on{display:flex}
+.btn-add-nav{flex:1;height:40px;border:none;border-radius:50px;background:var(--grad);font-family:var(--ft);font-size:.76rem;color:#fff;cursor:pointer;transition:var(--tr);box-shadow:0 4px 14px rgba(255,107,157,.3)}
+.btn-add-nav:hover{filter:brightness(1.1)}
+.btn-add-nav:disabled{opacity:.25;cursor:default;background:var(--border);box-shadow:none}
+.toast{position:fixed;top:70px;left:50%;transform:translateX(-50%) translateY(-80px);background:var(--card);border:1px solid var(--border);border-radius:16px;padding:10px 18px;font-size:.82rem;font-weight:700;white-space:normal;word-break:break-word;text-align:center;max-width:calc(100vw - 32px);width:max-content;z-index:9999;opacity:0;pointer-events:none;transition:transform .4s cubic-bezier(.34,1.56,.64,1);box-shadow:0 8px 32px rgba(0,0,0,.5)}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1;pointer-events:auto}
+.toast.ok{border-color:var(--pink);color:var(--pink)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.anim{animation:fadeUp .35s ease both}
+</style>
+<script>
+(function(){
+  try{
+    // Se catalogo.js carregou mas a versão no URL não bate certo com cf_versao → recarregar
+    var scripts=document.querySelectorAll('script[src*="catalogo.js"]');
+    if(!scripts.length) return;
+    var src=scripts[0].getAttribute('src')||'';
+    var urlV=parseInt((src.match(/\?v=(\d+)/)||[])[1]||0);
+    var lojaV=typeof LOJA_DEFAULT!=='undefined'?(LOJA_DEFAULT.cf_versao||0):0;
+    // Se versão do URL é diferente de cf_versao publicado → cache desactualizada → recarregar
+    if(urlV>0&&lojaV>0&&urlV!==lojaV){
+      var bust='?_v='+lojaV;
+      if(location.search!==bust) window.location.replace(location.pathname+bust);
+    }
+  }catch(_){}
+})();
+</script>
+</head>
+<body>
+<script>
+window.addEventListener('error',function(e){
+  if(document.body&&!document.getElementById('_cf_err')){
+    var d=document.createElement('div');
+    d.id='_cf_err';
+    d.style.cssText='position:fixed;inset:0;background:#0d0d1a;color:#ff6b9d;font-family:sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;z-index:99999';
+    d.innerHTML='<div style="font-size:2rem;margin-bottom:12px">⚠️</div><div style="font-size:1rem;font-weight:700;margin-bottom:8px">Erro a carregar a página</div><div style="font-size:.8rem;opacity:.7;margin-bottom:20px">Tente recarregar ou limpar a cache do browser</div><button onclick="location.reload(true)" style="padding:10px 24px;background:#ff6b9d;border:none;border-radius:50px;color:#fff;font-size:.85rem;cursor:pointer">🔄 Recarregar</button>';
+    document.body.appendChild(d);
+  }
+},{once:false});
+</script>
+<header class="hdr">
+  <button class="btn-bk" onclick="history.back()"><i class="fa-solid fa-arrow-left"></i></button>
+  <div class="hdr-titulo" id="hdr-titulo">Produto</div>
+  <button class="btn-th" id="btn-wl" onclick="toggleWl()"><i class="fa-regular fa-heart"></i></button>
+  <button class="btn-th" onclick="toggleTheme()"><i data-theme-ico class="fa-solid fa-sun"></i></button>
+</header>
+<div id="hero-container">
+  <!-- Preenchido pelo JS — carrossel se tiver galeria, imagem simples se não tiver -->
+</div>
+<div class="pd anim">
+  <div class="pd-cat" id="pd-cat"></div>
+  <div class="pd-nome" id="pd-nome">—</div>
+  <div class="pd-preco" id="pd-preco"></div>
+  <div class="pd-orig-row" id="pd-orig-row" style="display:none"><span class="pd-orig" id="pd-orig"></span><span class="pd-pct" id="pd-pct"></span></div>
+  <p class="pd-desc" id="pd-desc"></p>
+  <div class="pd-dests" id="pd-dests"></div>
+</div>
+<div class="divd"></div>
+<div class="sec" id="sec-qty">
+  <div class="sec-t">Quantidade</div>
+  <div class="qty-row"><button class="qty-btn" onclick="qty(-1)">−</button><span class="qty-val" id="qty-val">1</span><button class="qty-btn" onclick="qty(1)">+</button></div>
+</div>
+<div class="sec">
+  <div class="sec-t">Personalização / Nota de encomenda</div>
+  <textarea class="nota-input" id="nota-input" placeholder="Tema, cores, sabores, data do evento, número de convidados, observações especiais..."></textarea>
+</div>
+<div class="divd"></div>
+<div class="sec" id="sec-specs" style="display:none"><div class="sec-t">Detalhes do produto</div><div class="specs-card" id="specs-card"></div></div>
+<div class="divd" id="rel-div" style="display:none"></div>
+<div class="sec" id="sec-rel" style="display:none"><div class="sec-t">Veja também</div><div class="related-scroll"><div class="related-inner" id="rel-inner"></div></div></div>
+<div class="lightbox" id="lightbox" onclick="fecharLightbox()"><button class="lb-close"><i class="fa-solid fa-xmark"></i></button><img class="lb-img" id="lb-img" src="" alt="" style="display:none"/><span class="lb-emoji" id="lb-emoji" style="display:none"></span></div>
+<div class="nav">
+  <button class="btn-cart-ico" onclick="window.location.href='carrinho.html'"><i class="fa-solid fa-cart-shopping"></i><span class="badge-n" id="badge-n">0</span></button>
+  <button class="btn-add-nav" id="btn-add" onclick="addCart()">Adicionar ao Carrinho</button>
+</div>
+<div class="toast" id="toast"></div>
+<script src="catalogo.js?v=6"></script>
+<script>
+  let _p=null,_qty=1;
+  document.addEventListener('DOMContentLoaded',async ()=>{
+    initTheme();_syncThemeIcons();applyThemeColors();
+    await initCatalogo();
+    const id=parseInt(new URLSearchParams(window.location.search).get('id'));
+    if(!id){window.location.href='catalogo.html';return;}
+    _p=getProdutos().find(x=>x.id===id);
+    if(!_p){window.location.href='catalogo.html';return;}
+    carregar();actuBadge();actuWishlist();
+  });
+  let _carouselIdx=0, _carouselImgs=[];
+  function carregar(){
+    const p=_p;
+    const l=getLoja();
+    document.title=p.nome+' | '+l.nome;
+    document.getElementById('hdr-titulo').textContent=p.nome;
+    document.getElementById('pd-cat').textContent=getCategorias().find(c=>c.id===p.categoria)?.label||'';
+    document.getElementById('pd-nome').textContent=p.nome;
+
+    // Construir array de imagens: principal + galeria
+    _carouselImgs=[];
+    if(p.imagem) _carouselImgs.push(p.imagem);
+    if(p.galeria&&p.galeria.length) _carouselImgs.push(...p.galeria.filter(x=>!!x));
+
+    // Construir hero
+    const heroContainer=document.getElementById('hero-container');
+    const tagHtml=p.etiqueta?`<span class="prod-tag ${p.etiqueta}" id="prod-tag">${{promo:'Promoção',novo:'Novo',destaque:'⭐ Destaque',especial:'Especial'}[p.etiqueta]||''}</span>`:`<span></span>`;
+
+    if(_carouselImgs.length>1){
+      // Carrossel
+      const slides=_carouselImgs.map((img,i)=>`<div class="carousel-slide"><img src="${img}" alt="${p.nome} ${i+1}" loading="${i===0?'eager':'lazy'}" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/><span class="carousel-slide-fb" style="display:none;font-size:6rem;width:100%;height:100%;align-items:center;justify-content:center">${p.emoji}</span></div>`).join('');
+      const dots=_carouselImgs.map((_,i)=>`<div class="carousel-dot${i===0?' on':''}" onclick="goSlide(${i})"></div>`).join('');
+      heroContainer.innerHTML=`
+        <div class="carousel" id="carousel">
+          <div class="carousel-track" id="carousel-track">${slides}</div>
+          <button class="carousel-btn prev" onclick="goSlide(_carouselIdx-1)">‹</button>
+          <button class="carousel-btn next" onclick="goSlide(_carouselIdx+1)">›</button>
+          <div class="carousel-dots">${dots}</div>
+          <div class="tag-strip">${tagHtml}<button class="btn-zoom" onclick="abrirLightbox()"><i class='fa-solid fa-magnifying-glass'></i> Ampliar</button></div>
+        </div>`;
+    } else if(_carouselImgs.length===1){
+      // Imagem simples
+      heroContainer.innerHTML=`
+        <div class="prod-hero" id="prod-hero">
+          <img src="${_carouselImgs[0]}" alt="${p.nome}" onerror="this.style.display='none';document.getElementById('prod-emoji-fb').style.display='block'"/>
+          <span class="prod-emoji-big" id="prod-emoji-fb" style="display:none">${p.emoji}</span>
+          <div class="tag-strip">${tagHtml}<button class="btn-zoom" onclick="abrirLightbox()"><i class='fa-solid fa-magnifying-glass'></i> Ampliar</button></div>
+        </div>`;
+    } else {
+      // Só emoji
+      heroContainer.innerHTML=`
+        <div class="prod-hero" id="prod-hero">
+          <span class="prod-emoji-big">${p.emoji}</span>
+          <div class="tag-strip">${tagHtml}<button class="btn-zoom" onclick="abrirLightbox()"><i class='fa-solid fa-magnifying-glass'></i> Ampliar</button></div>
+        </div>`;
+    }
+
+    const pEl=document.getElementById('pd-preco');
+    if(p.preco>0){pEl.textContent=kz(p.preco);pEl.className='pd-preco';}else{pEl.textContent='Orçamento personalizado';pEl.className='pd-preco orcamento';}
+    if(p.preco_orig>0){document.getElementById('pd-orig').textContent=kz(p.preco_orig);document.getElementById('pd-pct').textContent=`-${Math.round((1-p.preco/p.preco_orig)*100)}%`;document.getElementById('pd-orig-row').style.display='flex';}
+    document.getElementById('pd-desc').textContent=p.descricao||'';
+    document.getElementById('pd-dests').innerHTML=(p.destaques||[]).map(d=>`<span class="pd-dest-it">✓ ${d}</span>`).join('');
+    if(p.preco===0){document.getElementById('sec-qty').style.display='none';}
+    if(p.specs&&Object.keys(p.specs).length){document.getElementById('sec-specs').style.display='block';document.getElementById('specs-card').innerHTML=Object.entries(p.specs).map(([k,v])=>`<div class="spec-row"><span class="spec-k">${k}</span><span class="spec-v">${v}</span></div>`).join('');}
+    const rels=getProdutos().filter(x=>x.categoria===p.categoria&&x.id!==p.id).slice(0,6);
+    if(rels.length){document.getElementById('sec-rel').style.display='block';document.getElementById('rel-div').style.display='block';document.getElementById('rel-inner').innerHTML=rels.map(r=>{const imgH=r.imagem?`<img src="${r.imagem}" alt="" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span style="display:none;font-size:2rem;width:100%;height:100%;align-items:center;justify-content:center">${r.emoji}</span>`:r.emoji;return`<div class="rcard" onclick="window.location.href='produto.html?id=${r.id}'"><div class="rcard-img">${imgH}</div><div class="rcard-body"><div class="rcard-nome">${r.nome}</div><div class="rcard-preco">${kz(r.preco)}</div></div></div>`;}).join('');}
+    actuBtnAdd();
+
+    // Suporte a swipe no carrossel
+    if(_carouselImgs.length>1) _initSwipe();
+  }
+  function goSlide(idx){
+    const total=_carouselImgs.length; if(!total)return;
+    _carouselIdx=(idx+total)%total;
+    const track=document.getElementById('carousel-track');
+    if(track) track.style.transform=`translateX(-${_carouselIdx*100}%)`;
+    document.querySelectorAll('.carousel-dot').forEach((d,i)=>d.classList.toggle('on',i===_carouselIdx));
+  }
+  function _initSwipe(){
+    const el=document.getElementById('carousel'); if(!el)return;
+    let sx=0,sy=0,moving=false;
+    el.addEventListener('touchstart',e=>{
+      sx=e.touches[0].clientX;
+      sy=e.touches[0].clientY;
+      moving=false;
+    },{passive:true});
+    el.addEventListener('touchmove',e=>{
+      const dx=Math.abs(e.touches[0].clientX-sx);
+      const dy=Math.abs(e.touches[0].clientY-sy);
+      // Só bloquear scroll se movimento é maioritariamente horizontal
+      if(dx>dy&&dx>8){moving=true;e.preventDefault();}
+    },{passive:false});
+    el.addEventListener('touchend',e=>{
+      if(!moving)return;
+      const dx=e.changedTouches[0].clientX-sx;
+      if(Math.abs(dx)>40) goSlide(_carouselIdx+(dx<0?1:-1));
+      moving=false;
+    },{passive:true});
+  }
+  function qty(d){_qty=Math.max(1,Math.min(99,_qty+d));document.getElementById('qty-val').textContent=_qty;actuBtnAdd();}
+  function actuBtnAdd(){if(_p.preco>0)document.getElementById('btn-add').textContent=`Adicionar — ${kz(_p.preco*_qty)}`;}
+  function addCart(){
+    if(!_p)return;
+    const nota=document.getElementById('nota-input').value.trim();
+    if(_p.preco===0){
+      const l=getLoja();let m=`💌 *PEDIDO DE ORÇAMENTO — ${l.nome}*\n\n*Produto:* ${_p.nome}`;
+      if(nota)m+=`\n*Detalhes:* ${nota}`;
+      window.open(`https://wa.me/${l.whatsapp.replace(/\D/g,'')}?text=${encodeURIComponent(m)}`,'_blank');return;
+    }
+    const c=getCarrinho();c.push({chave:`${_p.id}-${Date.now()}`,produto_id:_p.id,nome:_p.nome,preco:_p.preco,quantidade:_qty,imagem:_p.imagem||'',emoji:_p.emoji,nota});
+    salvarCarrinho(c);actuBadge();toast(`✓ ${_p.nome} adicionado!`,'ok');
+    // Transformar botão em CTA para o carrinho durante 4s
+    const btnAdd=document.getElementById('btn-add');
+    const txtOriginal=btnAdd.textContent;
+    btnAdd.textContent='🛒 Ver Carrinho →';
+    btnAdd.style.background='linear-gradient(135deg,#06d6a0,#04b385)';
+    btnAdd.onclick=()=>window.location.href='carrinho.html';
+    clearTimeout(window._btnAddTimer);
+    window._btnAddTimer=setTimeout(()=>{
+      btnAdd.textContent=txtOriginal;
+      btnAdd.style.background='';
+      btnAdd.onclick=addCart;
+    },4000);
+  }
+  function abrirLightbox(){
+    const lb=document.getElementById('lightbox'),lI=document.getElementById('lb-img'),lE=document.getElementById('lb-emoji');
+    const imgActual=_carouselImgs[_carouselIdx]||_p.imagem;
+    if(imgActual){lI.src=imgActual;lI.style.display='block';lE.style.display='none';}
+    else{lE.textContent=_p.emoji;lE.style.display='block';lI.style.display='none';}
+    lb.classList.add('on');document.body.style.overflow='hidden';
+  }
+  function fecharLightbox(){document.getElementById('lightbox').classList.remove('on');document.body.style.overflow='';}
+  function actuBadge(){const c=getCarrinho(),q=c.reduce((s,i)=>s+i.quantidade,0);const b=document.getElementById('badge-n');b.textContent=q;b.classList.toggle('on',q>0);}
+  function actuWishlist(){
+    if(!_p) return;
+    const btn=document.getElementById('btn-wl');
+    if(btn) btn.innerHTML=isWishlisted(_p.id)?'<i class="fa-solid fa-heart"></i>':'<i class="fa-regular fa-heart"></i>';
+  }
+  function toggleWl(){
+    if(!_p) return;
+    const adicionado=toggleWishlist(_p.id);
+    actuWishlist();
+    toast(adicionado?'❤️ Adicionado à wishlist':'🤍 Removido da wishlist','ok');
+  }
+  function toast(msg,tipo){clearTimeout(window._toastTimer);const t=document.getElementById('toast');if(!t)return;t.textContent=msg;t.className='toast show '+(tipo||'ok');window._toastTimer=window.setTimeout(function(){const e=document.getElementById('toast');if(e)e.classList.remove('show');},3200);}
+</script>
+</body>
+</html>

@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="pt-AO" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<script>
+if('serviceWorker' in navigator){ navigator.serviceWorker.register('./sw.js').catch(function(){}); }
+(function(){var t=localStorage.getItem('tema')||'dark';document.documentElement.setAttribute('data-theme',t);})();
+</script>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<meta name="theme-color" content="#0d0d1a"/>
+<title>Pedido Confirmado!</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#0d0d1a;--bg2:#14142b;--card:#1a1a32;--border:#2a2a4a;--pink:#ff6b9d;--purple:#b14ae8;--teal:#06d6a0;--yellow:#ffd166;--coral:#ff9f43;--red:#ff4757;--white:#fff;--muted:#9898bb;--muted2:#4a4a6a;--ft:'Fredoka One',cursive;--fb:'Nunito',sans-serif;--r:14px;--tr:all .3s cubic-bezier(.4,0,.2,1);--grad:linear-gradient(135deg,#ff6b9d,#b14ae8)}
+[data-theme="light"]{--bg:#fff5f8;--bg2:#fff;--card:#fff;--border:#f0d6e8;--white:#1a0a2e;--muted:#7a5a8a;--muted2:#ccc}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--fb);background:var(--bg);color:var(--white);min-height:100vh;padding-bottom:40px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;overflow-x:hidden}
+/* CONFETTI */
+.confetti-wrap{position:fixed;top:0;left:0;right:0;pointer-events:none;z-index:0;overflow:hidden;height:100vh}
+.cdot{position:absolute;top:-12px;border-radius:50%;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg);opacity:0}}
+/* MAIN */
+.main{width:100%;max-width:460px;padding:24px 16px 40px;display:flex;flex-direction:column;align-items:center;position:relative;z-index:1}
+.check-circle{width:90px;height:90px;border-radius:50%;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:2.4rem;margin:20px auto 18px;box-shadow:0 0 0 12px rgba(255,107,157,.15),0 0 0 24px rgba(255,107,157,.07);animation:pop .5s cubic-bezier(.34,1.56,.64,1) both}
+@keyframes pop{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
+h1{font-family:var(--ft);font-size:1.8rem;text-align:center;margin-bottom:6px}
+.sub{color:var(--muted);font-size:.88rem;text-align:center;margin-bottom:24px;line-height:1.5}
+/* REF BOX */
+.ref-box{width:100%;text-align:center;padding:16px;background:var(--card);border:1px solid var(--border);border-radius:18px;margin-bottom:12px}
+.ref-lbl{font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:6px}
+.ref-val{font-family:var(--ft);font-size:1.7rem;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:2px}
+.ref-copy{margin-top:8px;background:none;border:1px solid var(--border);border-radius:50px;padding:5px 14px;font-size:.68rem;color:var(--muted);cursor:pointer;transition:var(--tr)}
+.ref-copy:hover{border-color:var(--pink);color:var(--pink)}
+/* INFO */
+.info-card{width:100%;background:var(--card);border:1px solid var(--border);border-radius:18px;padding:16px;margin-bottom:12px}
+.info-l{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border);font-size:.84rem}
+.info-l:last-child{border-bottom:none}
+.info-l span:first-child{color:var(--muted)}
+.info-l strong{font-family:var(--ft)}
+/* PASSOS */
+.passos{width:100%;display:flex;flex-direction:column;gap:10px;margin-bottom:14px}
+.passo{display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--card);border:1px solid var(--border);border-radius:14px}
+.passo-n{width:30px;height:30px;border-radius:50%;background:var(--grad);display:flex;align-items:center;justify-content:center;font-family:var(--ft);font-size:.85rem;color:#fff;flex-shrink:0}
+.passo-txt strong{display:block;font-size:.84rem;margin-bottom:1px}
+.passo-txt span{font-size:.72rem;color:var(--muted)}
+/* BTNS */
+.btn-wa{width:100%;padding:15px;background:linear-gradient(135deg,#128c7e,#25d366);border:none;border-radius:50px;font-family:var(--ft);font-size:.95rem;color:#fff;cursor:pointer;box-shadow:0 4px 16px rgba(37,211,102,.3);display:flex;align-items:center;justify-content:center;gap:10px;text-decoration:none;margin-bottom:10px;transition:var(--tr)}
+.btn-wa:hover{filter:brightness(1.08);transform:translateY(-1px)}
+.btn-cat{width:100%;padding:13px;background:none;border:1.5px solid var(--border);border-radius:50px;font-family:var(--ft);font-size:.88rem;color:var(--muted);cursor:pointer;text-decoration:none;display:block;text-align:center;transition:var(--tr)}
+.btn-cat:hover{border-color:var(--pink);color:var(--pink)}
+</style>
+</head>
+<body>
+<div class="confetti-wrap" id="confetti"></div>
+<div class="main">
+  <div class="check-circle">✓</div>
+  <h1>Pedido Confirmado! 🎉</h1>
+  <p class="sub" id="subTxt">Obrigado pelo seu pedido.<br>Entraremos em contacto em breve.</p>
+
+  <div class="ref-box">
+    <div class="ref-lbl">Referência do pedido</div>
+    <div class="ref-val" id="refVal">—</div>
+    <button class="ref-copy" onclick="copiarRef()"><i class="fa-regular fa-copy"></i> Copiar referência</button>
+  </div>
+
+  <div class="info-card">
+    <div class="info-l"><span>Total</span><strong id="totalVal" style="color:var(--pink)">—</strong></div>
+    <div class="info-l"><span>Estado</span><strong style="color:var(--teal)">✓ Recebido</strong></div>
+    <div class="info-l"><span>Pagamento</span><strong style="color:var(--yellow)">⏳ Pendente</strong></div>
+  </div>
+
+  <div class="passos">
+    <div class="passo">
+      <div class="passo-n">1</div>
+      <div class="passo-txt"><strong>Acerte o pagamento</strong><span>Envie comprovativo Multicaixa Express ou combine pelo WhatsApp.</span></div>
+    </div>
+    <div class="passo">
+      <div class="passo-n">2</div>
+      <div class="passo-txt"><strong>Preparação do pedido</strong><span>Após confirmação do pagamento começamos a preparar.</span></div>
+    </div>
+    <div class="passo">
+      <div class="passo-n">3</div>
+      <div class="passo-txt"><strong>Entrega ou levantamento</strong><span>Será notificado quando o pedido estiver pronto.</span></div>
+    </div>
+  </div>
+
+  <a href="#" class="btn-wa" id="btnWa" target="_blank">
+    <i class="fa-brands fa-whatsapp" style="font-size:1.4rem"></i>
+    Falar com a loja pelo WhatsApp
+  </a>
+  <a href="catalogo.html" class="btn-cat">Continuar a comprar</a>
+</div>
+
+<script src="catalogo.js?v=6"></script>
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+  initTheme();
+  await initCatalogo();
+  const loja = getLoja();
+
+  const ref = localStorage.getItem('ist_ref') || '—';
+  const total = localStorage.getItem('ist_total') || '0';
+  const nome = localStorage.getItem('ist_nome') || '';
+
+  document.getElementById('refVal').textContent = ref;
+  document.getElementById('totalVal').textContent = kz(Number(total));
+
+  if (nome) {
+    document.getElementById('subTxt').innerHTML = `Obrigado, <strong>${nome.split(' ')[0]}</strong>!<br>Entraremos em contacto em breve.`;
+  }
+
+  // WhatsApp
+  const waNum = (loja.whatsapp || '').replace(/\D/g, '');
+  if (waNum) {
+    const msg = encodeURIComponent(
+      `Olá! Acabei de fazer um pedido na ${loja.nome||'loja'}.\n\n` +
+      `📋 *Referência:* ${ref}\n` +
+      `💰 *Total:* ${kz(Number(total))}\n\n` +
+      `Gostaria de acertar o pagamento. Obrigado!`
+    );
+    document.getElementById('btnWa').href = `https://wa.me/${waNum}?text=${msg}`;
+  } else {
+    document.getElementById('btnWa').style.display = 'none';
+  }
+
+  // Limpar dados temporários (não o token/cliente)
+  ['ist_ref','ist_total','ist_nome','ist_wa'].forEach(k => localStorage.removeItem(k));
+
+  // Confetti!
+  lancarConfetti();
+});
+
+function lancarConfetti() {
+  const cont = document.getElementById('confetti');
+  const cores = ['#ff6b9d','#b14ae8','#ffd166','#06d6a0','#ff9f43','#ff4757'];
+  for (let i = 0; i < 70; i++) {
+    const d = document.createElement('div');
+    d.className = 'cdot';
+    const size = Math.random() * 10 + 5;
+    d.style.cssText = `left:${Math.random()*100}%;width:${size}px;height:${size}px;background:${cores[Math.floor(Math.random()*cores.length)]};animation-duration:${Math.random()*2+2}s;animation-delay:${Math.random()*2}s;opacity:${Math.random()*.8+.2}`;
+    cont.appendChild(d);
+  }
+}
+
+function copiarRef() {
+  const ref = document.getElementById('refVal').textContent;
+  navigator.clipboard.writeText(ref).then(() => {
+    const btn = document.querySelector('.ref-copy');
+    btn.innerHTML = '<i class="fa-solid fa-check"></i> Copiado!';
+    btn.style.color = 'var(--teal)';
+    setTimeout(() => { btn.innerHTML = '<i class="fa-regular fa-copy"></i> Copiar referência'; btn.style.color = ''; }, 2000);
+  });
+}
+</script>
+</body>
+</html>

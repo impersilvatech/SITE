@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="pt-AO" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<script>
+// Registar Service Worker — garante sempre ficheiros frescos do servidor
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('./sw.js').catch(()=>{});
+}
+// Ouvir mensagem do Service Worker — recarregar quando há nova versão
+navigator.serviceWorker.addEventListener('message',function(e){
+  if(e.data&&e.data.type==='SW_UPDATED'){
+    if(!sessionStorage.getItem('_cf_sw_reloaded')){
+      sessionStorage.setItem('_cf_sw_reloaded','1');
+      location.reload();
+    }
+  }
+});
+// Se catalogo.js falhou (ecrã preto) — detectar e forçar reload sem cache
+window.addEventListener('load', function(){
+  if(typeof LOJA_DEFAULT==='undefined'||typeof getLoja==='undefined'){
+    // catalogo.js não carregou correctamente — limpar cache e recarregar
+    if(!sessionStorage.getItem('_cf_reloaded')){
+      sessionStorage.setItem('_cf_reloaded','1');
+      if('caches' in window){
+        caches.keys().then(function(keys){
+          return Promise.all(keys.map(function(k){return caches.delete(k);}));
+        }).then(function(){
+          location.replace(location.pathname+'?_v='+Date.now());
+        });
+      } else {
+        location.replace(location.pathname+'?_v='+Date.now());
+      }
+    } else {
+      // Segunda tentativa falhou — NÃO remover o flag (evita loop infinito)
+      // Marcar como 'failed' e mostrar erro visível ao utilizador
+      sessionStorage.setItem('_cf_reloaded','failed');
+      if(document.body&&!document.getElementById('_cf_load_err')){
+        var d=document.createElement('div');
+        d.id='_cf_load_err';
+        d.style.cssText='position:fixed;inset:0;background:#0d0d1a;color:#ff6b9d;font-family:sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;z-index:99999';
+        d.innerHTML='<div style="font-size:2rem;margin-bottom:12px">⚠️</div><div style="font-size:1rem;font-weight:700;margin-bottom:8px">Erro ao carregar o site</div><div style="font-size:.8rem;opacity:.7;margin-bottom:20px">Verifique a sua ligação à internet e tente novamente.</div><button onclick="sessionStorage.clear();location.reload(true)" style="padding:10px 24px;background:#ff6b9d;border:none;border-radius:50px;color:#fff;font-size:.85rem;cursor:pointer">🔄 Tentar novamente</button>';
+        document.body.appendChild(d);
+      }
+    }
+  } else {
+    sessionStorage.removeItem('_cf_reloaded');
+  }
+});
+</script>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+<meta http-equiv="Pragma" content="no-cache"/>
+<meta http-equiv="Expires" content="0"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Catálogo | CONFETI</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml"/>
+<script>(function(){var t=localStorage.getItem('cf_theme')||'dark';document.documentElement.setAttribute('data-theme',t);})()</script>
+<script>(function(){
+  try{
+    var l=JSON.parse(localStorage.getItem('cf_loja')||'{}');
+    var n=l.nome;
+    if(n){
+      // Aplicar imediatamente quando o elemento existir
+      function _aplicarNome(){
+        document.querySelectorAll('[data-loja-nome]').forEach(function(el){el.textContent=n;});
+        var t=document.title;
+        if(t&&t.indexOf('CONFETI')>=0)document.title=t.replace('CONFETI',n);
+      }
+      // Tentar imediatamente + no DOMContentLoaded como fallback
+      document.addEventListener('DOMContentLoaded',_aplicarNome);
+      // MutationObserver para apanhar elementos criados dinamicamente
+      var obs=new MutationObserver(function(){
+        var els=document.querySelectorAll('[data-loja-nome]');
+        if(els.length){els.forEach(function(el){el.textContent=n;});}
+      });
+      obs.observe(document.documentElement,{childList:true,subtree:true});
+      // Parar observer após carregar
+      document.addEventListener('DOMContentLoaded',function(){obs.disconnect();});
+    }
+  }catch(_){}
+})()</script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#0d0d1a;--bg2:#14142b;--card:#1a1a32;--border:#2a2a4a;--pink:#ff6b9d;--purple:#b14ae8;--teal:#06d6a0;--yellow:#ffd166;--coral:#ff9f43;--red:#ff4757;--white:#fff;--muted:#9898bb;--muted2:#4a4a6a;--ft:'Fredoka One',cursive;--fb:'Nunito',sans-serif;--r:14px;--tr:all .3s cubic-bezier(.4,0,.2,1);--grad:linear-gradient(135deg,#ff6b9d,#b14ae8)}
+[data-theme="light"]{--bg:#fff5f8;--bg2:#fff;--card:#fff;--border:#f0d6e8;--white:#1a0a2e;--muted:#7a5a8a;--muted2:#ccc}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--fb);background:var(--bg);color:var(--white);min-height:100vh;padding-bottom:66px;transition:background .35s,color .35s}
+.hdr{position:sticky;top:0;z-index:100;background:rgba(13,13,26,.97);backdrop-filter:blur(24px);border-bottom:1px solid var(--border);transition:background .35s}
+[data-theme="light"] .hdr{background:rgba(255,245,248,.97)}
+.hdr-top{display:flex;align-items:center;gap:8px;padding:10px 14px}
+.btn-bk{width:32px;height:32px;border-radius:50%;background:none;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:.9rem;cursor:pointer;color:var(--white);flex-shrink:0}
+.hdr-nome{font-family:var(--ft);font-size:1.1rem;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;flex:1;text-align:center}
+.hb{width:32px;height:32px;border-radius:50%;background:none;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:.82rem;cursor:pointer;position:relative;color:var(--white)}
+.hb-badge{position:absolute;top:-2px;right:-2px;width:14px;height:14px;border-radius:50%;background:var(--red);color:#fff;font-size:.46rem;font-weight:700;display:none;align-items:center;justify-content:center}
+.hb-badge.on{display:flex}
+.search-wrap{position:relative;border-top:1px solid var(--border)}
+.si{width:100%;padding:9px 38px;background:transparent;border:none;font-family:var(--fb);font-size:.84rem;color:var(--white);outline:none}
+.si::placeholder{color:var(--muted2)}
+.si-ico{position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:.78rem;color:var(--muted);pointer-events:none}
+.si-clr{position:absolute;right:12px;top:50%;transform:translateY(-55%);background:none;border:none;font-size:.78rem;cursor:pointer;color:var(--muted);display:none}
+.si-clr.on{display:block}
+.cats{overflow-x:auto;scrollbar-width:none;border-bottom:1px solid var(--border)}
+.cats::-webkit-scrollbar{display:none}
+.cats-inner{display:flex;padding:0 12px;width:max-content}
+.cat-btn{padding:9px 14px;border:none;background:none;font-family:var(--ft);font-size:.62rem;color:var(--muted);border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap;transition:var(--tr)}
+.cat-btn.on{color:var(--pink);border-bottom-color:var(--pink)}
+.result-bar{display:flex;align-items:center;justify-content:space-between;padding:7px 14px 4px;font-size:.68rem;color:var(--muted)}
+.result-bar strong{color:var(--white)}
+.view-toggle{display:flex;gap:3px}
+.vt{width:26px;height:26px;background:none;border:1px solid var(--border);border-radius:6px;font-size:.72rem;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center}
+.vt.on{background:var(--pink);color:#fff;border-color:var(--pink)}
+/* WISHLIST toggle */
+.wl-toggle{display:flex;align-items:center;gap:4px;background:none;border:1px solid var(--border);border-radius:50px;padding:3px 9px;font-size:.6rem;color:var(--muted);cursor:pointer;transition:var(--tr)}
+.wl-toggle.on{color:var(--pink);border-color:rgba(255,107,157,.4);background:rgba(255,107,157,.07)}
+/* GRID */
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:8px 10px}
+.grid.list{display:flex;flex-direction:column;padding:8px 12px;gap:8px}
+/* CARD */
+.pcard{background:var(--card);border:1px solid var(--border);border-radius:18px;cursor:pointer;transition:all .25s;position:relative;overflow:hidden}
+.pcard.esgotado{opacity:.5;cursor:not-allowed;filter:grayscale(.4)}
+.pcard.esgotado .btn-add-quick{display:none}
+.pcard.esgotado::after{content:'Esgotado';position:absolute;bottom:0;left:0;right:0;background:rgba(255,107,157,.15);border-top:1px solid rgba(255,107,157,.3);text-align:center;font-family:var(--ft);font-size:.52rem;color:var(--pink);padding:4px 0;text-transform:uppercase}
+.pcard:not(.esgotado):hover{transform:translateY(-3px);box-shadow:0 8px 28px rgba(255,107,157,.15);border-color:rgba(255,107,157,.35)}
+.grid.list .pcard{display:flex;gap:12px;align-items:center;padding:11px 12px;border-radius:14px}
+.pcard-img{aspect-ratio:1;background:var(--bg2);display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;border-radius:14px 14px 0 0}
+.grid.list .pcard-img{width:64px;height:64px;aspect-ratio:auto;flex-shrink:0;border-radius:12px}
+.pcard-img img{width:100%;height:100%;object-fit:cover;transition:transform .5s}
+.pcard:hover .pcard-img img{transform:scale(1.07)}
+.pcard-emoji{font-size:clamp(2.2rem,9vw,3.2rem);transition:transform .3s}
+.pcard:hover .pcard-emoji{transform:scale(1.12)}
+.grid.list .pcard-emoji{font-size:1.9rem}
+.ptag{position:absolute;top:7px;left:7px;padding:2px 8px;font-family:var(--ft);font-size:.5rem;border-radius:6px}
+.ptag-promo{background:var(--red);color:#fff}.ptag-novo{background:var(--teal);color:#0d0d1a}.ptag-destaque{background:var(--grad);color:#fff}.ptag-especial{background:var(--coral);color:#fff}
+/* Wishlist button on card */
+.btn-wish{position:absolute;top:7px;right:7px;width:26px;height:26px;border-radius:50%;background:rgba(13,13,26,.75);border:1px solid rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:.75rem;cursor:pointer;transition:var(--tr);z-index:2;backdrop-filter:blur(4px)}
+.btn-wish:hover,.btn-wish.on{background:rgba(255,107,157,.2);border-color:rgba(255,107,157,.5)}
+.grid.list .btn-wish{position:relative;top:auto;right:auto;flex-shrink:0;width:30px;height:30px;font-size:.8rem}
+.pcard-body{padding:8px 10px 12px}
+.grid.list .pcard-body{padding:0;flex:1;min-width:0}
+.pcard-cat{font-size:.5rem;font-weight:700;color:var(--pink);opacity:.8;text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px}
+.pcard-nome{font-family:var(--ft);font-size:.88rem;color:var(--white);line-height:1.25;margin-bottom:4px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.grid.list .pcard-nome{-webkit-line-clamp:1;white-space:nowrap;text-overflow:ellipsis;display:block}
+.pcard-preco{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.pcard-val{font-family:var(--ft);font-size:.9rem;color:var(--pink)}
+.pcard-val.orcamento{color:var(--coral)}
+.pcard-orig{font-size:.68rem;color:var(--muted2);text-decoration:line-through}
+.pcard-pct{font-size:.54rem;font-weight:700;color:var(--red);background:rgba(255,71,87,.1);border-radius:4px;padding:1px 5px}
+.btn-add-quick{position:absolute;bottom:8px;right:8px;width:28px;height:28px;border-radius:50%;background:var(--grad);border:none;color:#fff;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(255,107,157,.4);transition:var(--tr);z-index:2}
+.btn-add-quick:hover{transform:scale(1.12)}
+.grid.list .btn-add-quick{position:relative;bottom:auto;right:auto;flex-shrink:0;border-radius:10px;width:34px;height:34px}
+.empty{padding:80px 20px;text-align:center;display:none}
+.empty .ei{font-size:3.5rem;margin-bottom:12px;opacity:.3}
+.empty p{font-family:var(--ft);font-size:1rem;color:var(--muted)}
+/* WISHLIST EMPTY */
+.wl-empty{padding:40px 20px;text-align:center}
+.wl-empty-ico{font-size:3rem;margin-bottom:10px;opacity:.3}
+.wl-empty p{font-family:var(--ft);font-size:.9rem;color:var(--muted);margin-bottom:14px}
+/* OVERLAY + SHEET */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:300;opacity:0;pointer-events:none;transition:opacity .28s}
+.overlay.on{opacity:1;pointer-events:all}
+.sheet{position:fixed;bottom:0;left:0;right:0;z-index:301;background:var(--card);border-radius:22px 22px 0 0;border-top:2px solid var(--pink);max-height:92vh;overflow-y:auto;transform:translateY(100%);transition:transform .38s cubic-bezier(.34,1.1,.64,1),background .35s;padding-bottom:env(safe-area-inset-bottom,20px)}
+.sheet.on{transform:translateY(0)}
+.sh-bar{width:38px;height:4px;border-radius:2px;background:var(--border);margin:10px auto 0}
+.sh-close{position:absolute;top:10px;right:12px;background:none;border:1px solid var(--border);border-radius:50px;padding:4px 10px;font-size:.68rem;color:var(--muted);cursor:pointer}
+.sh-inner{padding:4px 16px 20px}
+.sh-top{display:flex;gap:14px;padding:12px 0 14px;border-bottom:1px solid var(--border)}
+.sh-img{width:86px;height:86px;flex-shrink:0;border-radius:16px;background:var(--bg2);display:flex;align-items:center;justify-content:center;font-size:2.5rem;overflow:hidden}
+.sh-img img{width:100%;height:100%;object-fit:cover}
+.sh-info{flex:1}
+.sh-cat{font-size:.5rem;font-weight:700;text-transform:uppercase;color:var(--pink);opacity:.8;margin-bottom:3px}
+.sh-nome{font-family:var(--ft);font-size:1.05rem;color:var(--white);margin-bottom:4px;line-height:1.2}
+.sh-preco{font-family:var(--ft);font-size:1.15rem;color:var(--pink)}
+.sh-preco.orcamento{color:var(--coral)}
+.sh-orig{font-size:.76rem;color:var(--muted2);text-decoration:line-through;margin-left:4px}
+.sh-pct{font-size:.58rem;font-weight:700;color:var(--red);background:rgba(255,71,87,.1);border-radius:4px;padding:2px 6px;margin-left:4px}
+.sh-desc{font-size:.8rem;color:var(--muted);margin-top:6px;line-height:1.55;font-style:italic}
+.sh-destaques{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.sh-dest-it{padding:3px 9px;background:rgba(255,107,157,.08);border:1px solid rgba(255,107,157,.2);border-radius:50px;font-size:.62rem;color:var(--pink)}
+.sh-sec-t{font-size:.58rem;font-weight:700;text-transform:uppercase;color:var(--muted);letter-spacing:.5px;margin:14px 0 8px}
+.qty-row{display:flex;align-items:center}
+.qty-btn{width:36px;height:36px;border-radius:50%;border:1.5px solid var(--border);background:none;font-size:1.2rem;font-weight:700;color:var(--white);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:var(--tr)}
+.qty-btn:hover{background:var(--pink);border-color:var(--pink)}
+.qty-val{min-width:46px;text-align:center;font-family:var(--ft);font-size:1.1rem}
+.sh-nota{width:100%;min-height:58px;padding:10px 12px;background:var(--bg2);border:1.5px solid var(--border);border-radius:10px;font-family:var(--fb);font-size:.82rem;color:var(--white);resize:none;outline:none;line-height:1.5;transition:border-color .2s;margin-top:6px}
+.sh-nota:focus{border-color:rgba(255,107,157,.4)}
+.sh-nota::placeholder{color:var(--muted2)}
+.sh-btns{display:flex;gap:8px;margin-top:14px}
+.btn-sh-det{flex:0 0 auto;padding:12px 14px;background:none;border:1.5px solid var(--border);border-radius:50px;font-family:var(--ft);font-size:.68rem;color:var(--muted);cursor:pointer;white-space:nowrap;transition:var(--tr)}
+.btn-sh-det:hover{border-color:var(--pink);color:var(--pink)}
+.btn-sh-add{flex:1;padding:12px;background:var(--grad);border:none;border-radius:50px;font-family:var(--ft);font-size:.8rem;color:#fff;cursor:pointer}
+/* PERS */
+.pers-ov{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:400;display:none;align-items:flex-end}
+.pers-ov.on{display:flex}
+.pers-sh{background:var(--card);border-radius:22px 22px 0 0;border-top:2px solid var(--pink);width:100%;padding:20px 18px 34px}
+.pers-h{font-family:var(--ft);font-size:1rem;color:var(--white);margin-bottom:4px}
+.pers-s{font-size:.76rem;color:var(--muted);margin-bottom:14px;line-height:1.55}
+.pers-ta{width:100%;min-height:90px;padding:12px 14px;background:var(--bg2);border:1.5px solid var(--border);border-radius:12px;font-family:var(--fb);font-size:.84rem;color:var(--white);resize:none;outline:none;line-height:1.5}
+.pers-ta::placeholder{color:var(--muted2)}
+.btn-pers-env{width:100%;padding:13px;margin-top:10px;background:linear-gradient(135deg,#128c7e,#25d366);border:none;border-radius:50px;font-family:var(--ft);font-size:.82rem;color:#fff;cursor:pointer}
+.btn-pers-c{width:100%;padding:11px;margin-top:7px;background:none;border:1px solid var(--border);border-radius:50px;font-family:var(--ft);font-size:.74rem;color:var(--muted);cursor:pointer}
+/* NAV */
+.nav{position:fixed;bottom:0;left:0;right:0;z-index:200;padding:6px 12px 10px;display:flex;gap:8px;align-items:center;background:rgba(13,13,26,.97);backdrop-filter:blur(24px);border-top:1px solid var(--border);transition:background .35s}
+[data-theme="light"] .nav{background:rgba(255,245,248,.97)}
+.btn-home-nav{width:40px;height:40px;flex-shrink:0;background:var(--bg2);border:1px solid var(--border);border-radius:50%;font-size:.9rem;cursor:pointer;color:var(--white);display:flex;align-items:center;justify-content:center}
+.btn-cart-nav{flex:1;height:40px;border:none;background:var(--grad);border-radius:50px;font-family:var(--ft);font-size:.76rem;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:var(--tr);box-shadow:0 4px 14px rgba(255,107,157,.3)}
+.btn-cart-nav:disabled{opacity:.25;cursor:default;background:var(--border);box-shadow:none}
+.cart-ct{background:rgba(255,255,255,.25);border-radius:50px;padding:1px 9px;font-size:.68rem}
+.toast{position:fixed;top:70px;left:50%;transform:translateX(-50%) translateY(-80px);background:var(--card);border:1px solid var(--border);border-radius:16px;padding:10px 18px;font-size:.82rem;font-weight:700;white-space:normal;word-break:break-word;text-align:center;max-width:calc(100vw - 32px);width:max-content;z-index:9999;opacity:0;pointer-events:none;transition:transform .4s cubic-bezier(.34,1.56,.64,1);box-shadow:0 8px 32px rgba(0,0,0,.5)}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1;pointer-events:auto}
+.toast.ok{border-color:var(--pink);color:var(--pink)}
+.toast.err{border-color:var(--red);color:var(--red)}
+.toast.wl{border-color:var(--yellow);color:var(--yellow)}
+</style>
+<script>
+(function(){
+  try{
+    // Se catalogo.js carregou mas a versão no URL não bate certo com cf_versao → recarregar
+    var scripts=document.querySelectorAll('script[src*="catalogo.js"]');
+    if(!scripts.length) return;
+    var src=scripts[0].getAttribute('src')||'';
+    var urlV=parseInt((src.match(/\?v=(\d+)/)||[])[1]||0);
+    var lojaV=typeof LOJA_DEFAULT!=='undefined'?(LOJA_DEFAULT.cf_versao||0):0;
+    // Se versão do URL é diferente de cf_versao publicado → cache desactualizada → recarregar
+    if(urlV>0&&lojaV>0&&urlV!==lojaV){
+      var bust='?_v='+lojaV;
+      if(location.search!==bust) window.location.replace(location.pathname+bust);
+    }
+  }catch(_){}
+})();
+</script>
+</head>
+<body>
+<script>
+window.addEventListener('error',function(e){
+  if(document.body&&!document.getElementById('_cf_err')){
+    var d=document.createElement('div');
+    d.id='_cf_err';
+    d.style.cssText='position:fixed;inset:0;background:#0d0d1a;color:#ff6b9d;font-family:sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;z-index:99999';
+    d.innerHTML='<div style="font-size:2rem;margin-bottom:12px">⚠️</div><div style="font-size:1rem;font-weight:700;margin-bottom:8px">Erro a carregar a página</div><div style="font-size:.8rem;opacity:.7;margin-bottom:20px">Tente recarregar ou limpar a cache do browser</div><button onclick="location.reload(true)" style="padding:10px 24px;background:#ff6b9d;border:none;border-radius:50px;color:#fff;font-size:.85rem;cursor:pointer">🔄 Recarregar</button>';
+    document.body.appendChild(d);
+  }
+},{once:false});
+</script>
+<header class="hdr">
+  <div class="hdr-top">
+    <button class="btn-bk" onclick="window.location.href='index.html'"><i class="fa-solid fa-arrow-left"></i></button>
+    <div class="hdr-nome" id="hdr-nome" data-loja-nome>CONFETI</div>
+    <button class="hb" id="btn-wl-hdr" onclick="toggleWlView()" title="Wishlist">
+      <i class="fa-solid fa-heart"></i><span class="hb-badge" id="wl-badge">0</span>
+    </button>
+    <button class="hb" onclick="toggleTheme()"><i data-theme-ico class="fa-solid fa-sun"></i></button>
+  </div>
+  <div class="search-wrap">
+    <span class="si-ico"><i class="fa-solid fa-magnifying-glass"></i></span>
+    <input class="si" type="search" id="si" placeholder="Pesquisar bolo, salgados, kit..." oninput="pesquisar(this.value)"/>
+    <button class="si-clr" id="sclr" onclick="limparSearch()"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+  <div class="cats"><div class="cats-inner" id="cats-inner"></div></div>
+</header>
+
+<div class="result-bar">
+  <span id="result-txt">A carregar...</span>
+  <div style="display:flex;align-items:center;gap:8px">
+    <button class="wl-toggle" id="wl-toggle-btn" onclick="toggleWlView()"><i class="fa-solid fa-heart" style="margin-right:4px"></i>Wishlist</button>
+    <div class="view-toggle">
+      <button class="vt on" id="vt-grid" onclick="setView('grid')" title="Grelha">⊞</button>
+      <button class="vt" id="vt-list" onclick="setView('list')" title="Lista">☰</button>
+    </div>
+  </div>
+</div>
+
+<div class="grid" id="grid"></div>
+<div class="empty" id="empty"><div class="ei" id="ei"><i class="fa-solid fa-magnifying-glass"></i></div><p id="em">Nenhum produto encontrado.</p></div>
+
+<div class="overlay" id="overlay" onclick="fecharSheet()"></div>
+<div class="sheet" id="sheet">
+  <div class="sh-bar"></div>
+  <button class="sh-close" onclick="fecharSheet()"><i class="fa-solid fa-xmark"></i> fechar</button>
+  <div class="sh-inner">
+    <div class="sh-top">
+      <div class="sh-img" id="sh-img"></div>
+      <div class="sh-info">
+        <div class="sh-cat" id="sh-cat"></div>
+        <div class="sh-nome" id="sh-nome"></div>
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:2px">
+          <span class="sh-preco" id="sh-preco"></span>
+          <span class="sh-orig" id="sh-orig" style="display:none"></span>
+          <span class="sh-pct" id="sh-pct" style="display:none"></span>
+        </div>
+        <p class="sh-desc" id="sh-desc"></p>
+        <div class="sh-destaques" id="sh-dests"></div>
+      </div>
+    </div>
+    <div id="qty-sec">
+      <div class="sh-sec-t">Quantidade</div>
+      <div class="qty-row">
+        <button class="qty-btn" onclick="qty(-1)">−</button>
+        <span class="qty-val" id="qty-val">1</span>
+        <button class="qty-btn" onclick="qty(1)">+</button>
+      </div>
+    </div>
+    <div class="sh-sec-t">Personalização / Nota</div>
+    <textarea class="sh-nota" id="sh-nota" placeholder="Tema, cor, sabor, data do evento, número de pessoas..."></textarea>
+    <div class="sh-btns">
+      <button class="btn-sh-det" id="btn-sh-det">Ver detalhes</button>
+      <button class="btn-sh-add" id="btn-sh-add" onclick="addCart()"><i class="fa-solid fa-cart-plus" style="margin-right:5px"></i>Adicionar</button>
+    </div>
+  </div>
+</div>
+
+<div class="pers-ov" id="pers-ov">
+  <div class="pers-sh">
+    <div class="pers-h">✨ Encomenda Especial</div>
+    <p class="pers-s">Tem uma ideia especial? Descreva o seu evento e nós criamos algo único para si!</p>
+    <textarea class="pers-ta" id="pers-ta" placeholder="Ex: Mesa de doces para casamento de 80 pessoas, tema floral, cores rosa e dourado..."></textarea>
+    <button class="btn-pers-env" onclick="enviarPers()">📲 Enviar Pedido pelo WhatsApp</button>
+    <button class="btn-pers-c" onclick="fecharPers()">Cancelar</button>
+  </div>
+</div>
+
+<div class="nav">
+  <button class="btn-home-nav" onclick="window.location.href='index.html'"><i class="fa-solid fa-house"></i></button>
+  <button class="btn-cart-nav" id="btn-cart" disabled onclick="irCarrinho()">Ver Carrinho</button>
+</div>
+<div class="toast" id="toast"></div>
+<script src="catalogo.js?v=6"></script>
+<script>
+  let _loja,_cats,_prods,_catA='',_busca='',_ps=null,_qty=1,_viewMode='grid',_wlMode=false;
+
+  document.addEventListener('DOMContentLoaded',async ()=>{
+    initTheme();_syncThemeIcons();applyThemeColors();
+    // sem gate de login — qualquer pessoa pode ver o catálogo
+    await initCatalogo();
+    _loja=getLoja();_cats=getCategorias();_prods=getProdutos();
+    document.getElementById('hdr-nome').textContent=_loja.nome;
+    document.title='Catálogo | '+_loja.nome;
+    buildCats();actuCart();actuWlBadge();
+    const ini=sessionStorage.getItem('cf_cat_ini');
+    if(ini){const btn=document.querySelector(`.cat-btn[data-id="${ini}"]`);if(btn)filtrar(btn,ini);else render();}
+    else render();
+    sessionStorage.removeItem('cf_cat_ini');
+  });
+
+  function buildCats(){
+    const bar=document.getElementById('cats-inner'); bar.innerHTML='';
+    const all=document.createElement('button');all.className='cat-btn on';all.textContent='Tudo';all.onclick=()=>filtrar(all,'');bar.appendChild(all);
+    _cats.forEach(c=>{
+      const b=document.createElement('button');b.className='cat-btn';b.dataset.id=c.id;
+      b.innerHTML=`${c.emoji} ${c.label}`;b.onclick=()=>filtrar(b,c.id);bar.appendChild(b);
+    });
+    if(_loja.pedidoPersActivo){const bp=document.createElement('button');bp.className='cat-btn';bp.style.color='var(--coral)';bp.textContent='💌 Especial';bp.onclick=()=>abrirPers();bar.appendChild(bp);}
+  }
+  function filtrar(btn,cat){document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('on'));if(btn)btn.classList.add('on');_catA=cat;_wlMode=false;document.getElementById('wl-toggle-btn').classList.remove('on');render();}
+  function pesquisar(v){_busca=v.trim().toLowerCase();document.getElementById('sclr').classList.toggle('on',!!_busca);_wlMode=false;render();}
+  function limparSearch(){document.getElementById('si').value='';pesquisar('');}
+  function setView(v){_viewMode=v;document.getElementById('grid').className='grid'+(v==='list'?' list':'');document.getElementById('vt-grid').classList.toggle('on',v==='grid');document.getElementById('vt-list').classList.toggle('on',v==='list');}
+  function toggleWlView(){_wlMode=!_wlMode;document.getElementById('wl-toggle-btn').classList.toggle('on',_wlMode);render();}
+
+  function render(){
+    const grid=document.getElementById('grid'),empty=document.getElementById('empty');
+    let lista=_prods;
+    if(_wlMode){
+      const wl=getWishlist();lista=lista.filter(p=>wl.includes(p.id));
+      if(!lista.length){grid.innerHTML=`<div class="wl-empty" style="grid-column:1/-1"><div class="wl-empty-ico"><i class="fa-solid fa-heart" style="font-size:3rem;opacity:.25;color:var(--pink)"></i></div><p>A sua wishlist está vazia</p><button style="padding:10px 22px;background:var(--grad);border:none;border-radius:50px;font-family:var(--ft);font-size:.78rem;color:#fff;cursor:pointer" onclick="toggleWlView()">Ver Catálogo</button></div>`;empty.style.display='none';document.getElementById('result-txt').textContent='Wishlist';return;}
+    } else {
+      if(_catA)lista=lista.filter(p=>p.categoria===_catA);
+      if(_busca)lista=lista.filter(p=>p.nome.toLowerCase().includes(_busca)||(p.descricao||'').toLowerCase().includes(_busca));
+    }
+    if(!lista.length){grid.innerHTML='';empty.style.display='block';document.getElementById('result-txt').textContent='0 produtos';return;}
+    empty.style.display='none';
+    document.getElementById('result-txt').innerHTML=_wlMode?`<i class='fa-solid fa-heart' style='color:var(--pink);margin-right:3px'></i><strong>${lista.length}</strong> guardado${lista.length!==1?'s':''}`:(`<strong>${lista.length}</strong> produto${lista.length!==1?'s':''}`);
+    const catMap=Object.fromEntries(_cats.map(c=>[c.id,c.label]));
+    grid.innerHTML=lista.map(p=>{
+      const pct=p.preco_orig>0?Math.round((1-p.preco/p.preco_orig)*100):0;
+      const tag=p.etiqueta||'';const tl={promo:`-${pct}%`,novo:'Novo',destaque:'⭐',especial:'Especial'}[tag]||'';
+      const imgH=p.imagem?`<img src="${p.imagem}" alt="" loading="lazy" onerror="this.style.display='none';this.nextSibling.style.display='flex'"><span class="pcard-emoji" style="display:none">${p.emoji}</span>`:`<span class="pcard-emoji">${p.emoji}</span>`;
+      const precoH=p.preco>0?`<span class="pcard-val">${kz(p.preco)}</span>${p.preco_orig>0?`<span class="pcard-orig">${kz(p.preco_orig)}</span>`:''}`:`<span class="pcard-val orcamento">Pedir orçamento</span>`;
+      const wishedClass=isWishlisted(p.id)?'on':'';
+      return`<div class="${!p.disponivel?'pcard esgotado':'pcard'}" onclick="openSheet(${p.id})">
+        <div class="pcard-img">${imgH}${tag?`<span class="ptag ptag-${tag}">${tl}</span>`:''}
+          <button class="btn-wish ${wishedClass}" onclick="event.stopPropagation();doWishlist(${p.id},this)" title="Wishlist"><i class="fa-${isWishlisted(p.id)?'solid':'regular'} fa-heart"></i></button>
+        </div>
+        <div class="pcard-body">
+          <div class="pcard-cat">${catMap[p.categoria]||''}</div>
+          <div class="pcard-nome">${p.nome}</div>
+          <div class="pcard-preco">${precoH}</div>
+        </div>
+        <button class="btn-add-quick" onclick="event.stopPropagation();addDireto(${p.id})" title="Adicionar ao carrinho">+</button>
+      </div>`;
+    }).join('');
+  }
+
+  function doWishlist(id,btn){
+    const added=toggleWishlist(id);
+    btn.innerHTML=added?'<i class="fa-solid fa-heart"></i>':'<i class="fa-regular fa-heart"></i>';
+    btn.classList.toggle('on',added);
+    actuWlBadge();
+    toast(added?'Adicionado à wishlist ❤️':'Removido da wishlist','wl');
+  }
+  function actuWlBadge(){const n=getWishlist().length;const b=document.getElementById('wl-badge');b.textContent=n;b.classList.toggle('on',n>0);}
+
+  function openSheet(id){
+    const p=_prods.find(x=>x.id===id);if(!p)return;
+    if(!p.disponivel){toast('Produto esgotado — em breve de volta! 🙈','err');return;}
+    if(p.categoria==='especial'){abrirPers();return;}
+    _ps=p;_qty=1;
+    const si=document.getElementById('sh-img');
+    si.innerHTML=p.imagem?`<img src="${p.imagem}" alt="" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/><span style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-size:2.5rem">${p.emoji}</span>`:p.emoji;
+    document.getElementById('sh-cat').textContent=_cats.find(c=>c.id===p.categoria)?.label||'';
+    document.getElementById('sh-nome').textContent=p.nome;
+    const pEl=document.getElementById('sh-preco');
+    if(p.preco>0){pEl.textContent=kz(p.preco);pEl.className='sh-preco';}else{pEl.textContent='Pedir orçamento';pEl.className='sh-preco orcamento';}
+    const oEl=document.getElementById('sh-orig'),pcEl=document.getElementById('sh-pct');
+    if(p.preco_orig>0){oEl.textContent=kz(p.preco_orig);oEl.style.display='';pcEl.textContent=`-${Math.round((1-p.preco/p.preco_orig)*100)}%`;pcEl.style.display='';}
+    else{oEl.style.display='none';pcEl.style.display='none';}
+    document.getElementById('sh-desc').textContent=p.descricao||'';
+    document.getElementById('sh-dests').innerHTML=(p.destaques||[]).map(d=>`<span class="sh-dest-it">✓ ${d}</span>`).join('');
+    document.getElementById('qty-val').textContent=1;
+    document.getElementById('btn-sh-add').textContent=p.preco>0?`Adicionar — ${kz(p.preco)}`:'Solicitar Orçamento →';
+    document.getElementById('sh-nota').value='';
+    document.getElementById('btn-sh-det').onclick=()=>irDetalhe(p.id);
+    document.getElementById('qty-sec').style.display=p.preco===0?'none':'';
+    document.getElementById('overlay').classList.add('on');
+    document.getElementById('sheet').classList.add('on');
+    document.body.style.overflow='hidden';
+  }
+  function fecharSheet(){document.getElementById('overlay').classList.remove('on');document.getElementById('sheet').classList.remove('on');document.body.style.overflow='';}
+  function qty(d){_qty=Math.max(1,Math.min(99,_qty+d));document.getElementById('qty-val').textContent=_qty;if(_ps?.preco>0)document.getElementById('btn-sh-add').textContent=`Adicionar — ${kz(_ps.preco*_qty)}`;}
+  function addCart(){
+    if(!_ps)return;
+    const nota=document.getElementById('sh-nota').value.trim();
+    if(_ps.preco===0){enviarOrcamento(_ps,nota);return;}
+    const c=getCarrinho();
+    c.push({chave:`${_ps.id}-${Date.now()}`,produto_id:_ps.id,nome:_ps.nome,preco:_ps.preco,quantidade:_qty,imagem:_ps.imagem||'',emoji:_ps.emoji,nota});
+    salvarCarrinho(c);fecharSheet();actuCart();toast(`✓ ${_ps.nome} adicionado`,'ok');
+  }
+  function addDireto(id){
+    const p=_prods.find(x=>x.id===id);if(!p)return;
+    if(!p.disponivel){toast('Produto esgotado! 🙈','err');return;}
+    if(p.categoria==='especial'){abrirPers();return;}
+    if(p.preco===0){enviarOrcamento(p,'');return;}
+    const c=getCarrinho();c.push({chave:`${p.id}-${Date.now()}`,produto_id:p.id,nome:p.nome,preco:p.preco,quantidade:1,imagem:p.imagem||'',emoji:p.emoji,nota:''});
+    salvarCarrinho(c);actuCart();toast(`✓ ${p.nome}`,'ok');
+  }
+  function enviarOrcamento(p,nota){
+    const cli=JSON.parse(localStorage.getItem('cf_cliente')||'{}');
+    let m=`💌 *PEDIDO DE ORÇAMENTO — ${_loja.nome}*\n\n*Produto:* ${p.nome}\n`;
+    if(nota)m+=`*Detalhes:* ${nota}\n`;
+    if(cli.nome)m+=`\n*Cliente:* ${cli.nome} | ${cli.telefone||''}`;
+    fecharSheet();window.open(`https://wa.me/${_loja.whatsapp.replace(/\D/g,'')}?text=${encodeURIComponent(m)}`,'_blank');
+  }
+  function irDetalhe(id){fecharSheet();window.location.href=`produto.html?id=${id}`;}
+  function actuCart(){
+    const c=getCarrinho(),q=c.reduce((s,i)=>s+i.quantidade,0);
+    const btn=document.getElementById('btn-cart');
+    if(q>0){btn.disabled=false;btn.innerHTML=`Ver Carrinho <span class="cart-ct">${q}</span>`;}
+    else{btn.disabled=true;btn.innerHTML='Ver Carrinho';}
+  }
+  function irCarrinho(){if(!getCarrinho().length){toast('Carrinho vazio!','err');return;}window.location.href='carrinho.html';}
+  function abrirPers(){document.getElementById('pers-ta').value='';document.getElementById('pers-ov').classList.add('on');document.body.style.overflow='hidden';}
+  function fecharPers(){document.getElementById('pers-ov').classList.remove('on');document.body.style.overflow='';}
+  function enviarPers(){
+    const txt=document.getElementById('pers-ta').value.trim();if(!txt){toast('Descreva o pedido.','err');return;}
+    const cli=JSON.parse(localStorage.getItem('cf_cliente')||'{}');
+    let m=`💌 *ENCOMENDA ESPECIAL — ${_loja.nome}*\n\n${txt}`;
+    if(cli.nome)m+=`\n\n👤 ${cli.nome} | ${cli.telefone||''}`;
+    fecharPers();window.open(`https://wa.me/${_loja.whatsapp.replace(/\D/g,'')}?text=${encodeURIComponent(m)}`,'_blank');
+  }
+  let _toastTimer=null;
+  function toast(msg,tipo){clearTimeout(_toastTimer);const t=document.getElementById('toast');if(!t)return;t.textContent=msg;t.className='toast show '+(tipo||'ok');_toastTimer=setTimeout(()=>{if(t)t.classList.remove('show');},3200);}
+</script>
+</body>
+</html>
