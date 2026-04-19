@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="pt-AO" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<script>
+if('serviceWorker' in navigator){ navigator.serviceWorker.register('./sw.js').catch(function(){}); }
+(function(){var t=localStorage.getItem('tema')||'dark';document.documentElement.setAttribute('data-theme',t);})();
+</script>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<meta name="theme-color" content="#0d0d1a"/>
+<title>A Minha Conta</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#0d0d1a;--bg2:#14142b;--card:#1a1a32;--border:#2a2a4a;--pink:#ff6b9d;--purple:#b14ae8;--teal:#06d6a0;--yellow:#ffd166;--coral:#ff9f43;--red:#ff4757;--white:#fff;--muted:#9898bb;--muted2:#4a4a6a;--ft:'Fredoka One',cursive;--fb:'Nunito',sans-serif;--r:14px;--tr:all .3s cubic-bezier(.4,0,.2,1);--grad:linear-gradient(135deg,#ff6b9d,#b14ae8)}
+[data-theme="light"]{--bg:#fff5f8;--bg2:#fff;--card:#fff;--border:#f0d6e8;--white:#1a0a2e;--muted:#7a5a8a;--muted2:#ccc}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--fb);background:var(--bg);color:var(--white);min-height:100vh;padding-bottom:80px;transition:background .35s,color .35s}
+.hdr{position:sticky;top:0;z-index:100;background:rgba(13,13,26,.97);backdrop-filter:blur(24px);border-bottom:1px solid var(--border);padding:10px 14px;display:flex;align-items:center;gap:10px;transition:background .35s}
+[data-theme="light"] .hdr{background:rgba(255,245,248,.97)}
+.btn-bk{width:32px;height:32px;border-radius:50%;background:none;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:.9rem;cursor:pointer;color:var(--white)}
+.hdr-nome{font-family:var(--ft);font-size:1.1rem;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;flex:1;text-align:center}
+.hb{width:32px;height:32px;border-radius:50%;background:none;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:.82rem;cursor:pointer;color:var(--white)}
+.ctn{padding:16px;max-width:480px;margin:0 auto}
+/* TABS */
+.tabs{display:flex;background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:14px}
+.tab{flex:1;padding:12px;background:none;border:none;font-family:var(--ft);font-size:.85rem;color:var(--muted);cursor:pointer;transition:var(--tr)}
+.tab.on{background:var(--grad);color:#fff}
+/* FORM */
+.form-card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:18px;margin-bottom:12px}
+.form-card.hidden{display:none}
+.fg{margin-bottom:11px}
+.fg label{display:block;font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:4px}
+.fi{width:100%;padding:11px 13px;background:var(--bg2);border:1.5px solid var(--border);border-radius:10px;font-family:var(--fb);font-size:.88rem;color:var(--white);outline:none;transition:border-color .2s}
+.fi:focus{border-color:var(--pink)}
+.fi::placeholder{color:var(--muted2)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.btn-sub{width:100%;padding:14px;background:var(--grad);border:none;border-radius:50px;font-family:var(--ft);font-size:.95rem;color:#fff;cursor:pointer;box-shadow:0 4px 16px rgba(255,107,157,.3);transition:var(--tr);margin-top:4px;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-sub:hover{filter:brightness(1.1);transform:translateY(-1px)}
+.btn-sub:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.msg{font-size:.78rem;text-align:center;margin-top:10px;min-height:18px}
+.msg.err{color:var(--red)}
+.msg.ok{color:var(--teal)}
+/* PERFIL */
+.perfil-card{background:var(--grad);border-radius:18px;padding:22px 18px;margin-bottom:12px;position:relative;overflow:hidden}
+.perfil-card::before{content:'';position:absolute;top:-30px;right:-20px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.1)}
+.p-avatar{width:56px;height:56px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:1.6rem;margin-bottom:10px;border:2px solid rgba(255,255,255,.3)}
+.p-nome{font-family:var(--ft);font-size:1.35rem;color:#fff;margin-bottom:3px}
+.p-email{font-size:.74rem;color:rgba(255,255,255,.75)}
+/* MENU */
+.menu{background:var(--card);border:1px solid var(--border);border-radius:18px;overflow:hidden;margin-bottom:12px}
+.mi{display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--border);cursor:pointer;transition:var(--tr);text-decoration:none;color:inherit}
+.mi:last-child{border-bottom:none}
+.mi:hover{background:rgba(255,107,157,.05)}
+.mi-ico{width:36px;height:36px;border-radius:10px;background:rgba(255,107,157,.1);display:flex;align-items:center;justify-content:center;font-size:.88rem;color:var(--pink);flex-shrink:0}
+.mi-txt{flex:1}
+.mi-txt strong{display:block;font-size:.88rem;margin-bottom:1px}
+.mi-txt span{font-size:.7rem;color:var(--muted)}
+.mi-arr{color:var(--muted2);font-size:.7rem}
+/* ENCOMENDAS */
+.enc-item{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:12px;margin-bottom:8px;cursor:pointer;transition:var(--tr)}
+.enc-item:hover{border-color:rgba(255,107,157,.3)}
+.enc-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.enc-ref{font-family:var(--ft);font-size:.88rem}
+.enc-est{padding:3px 10px;border-radius:50px;font-family:var(--ft);font-size:.56rem;text-transform:uppercase}
+.enc-est.pendente{background:rgba(255,209,102,.1);color:var(--yellow);border:1px solid rgba(255,209,102,.3)}
+.enc-est.confirmada{background:rgba(6,214,160,.1);color:var(--teal);border:1px solid rgba(6,214,160,.3)}
+.enc-est.pronta{background:rgba(177,74,232,.1);color:var(--purple);border:1px solid rgba(177,74,232,.3)}
+.enc-est.entregue{background:rgba(6,214,160,.08);color:var(--teal);border:1px solid rgba(6,214,160,.2)}
+.enc-est.cancelada{background:rgba(255,71,87,.1);color:var(--red);border:1px solid rgba(255,71,87,.2)}
+.enc-bot{display:flex;justify-content:space-between;font-size:.76rem;color:var(--muted)}
+.enc-total{font-family:var(--ft);font-size:.86rem;color:var(--pink)}
+.enc-det{display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
+.enc-det.open{display:block}
+.enc-linha{display:flex;justify-content:space-between;font-size:.78rem;padding:4px 0;color:var(--muted)}
+.enc-linha span:last-child{color:var(--white);font-weight:600}
+.btn-wa-enc{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:10px;padding:10px;background:linear-gradient(135deg,#128c7e,#25d366);border:none;border-radius:50px;font-family:var(--ft);font-size:.78rem;color:#fff;cursor:pointer;transition:var(--tr)}
+/* SAIR */
+.btn-sair{width:100%;padding:13px;background:none;border:1.5px solid var(--border);border-radius:50px;font-family:var(--ft);font-size:.88rem;color:var(--red);cursor:pointer;transition:var(--tr)}
+.btn-sair:hover{background:rgba(255,71,87,.08);border-color:var(--red)}
+/* VAZIO */
+.vazio{text-align:center;padding:30px}
+.vazio i{font-size:2.8rem;opacity:.18;display:block;margin-bottom:10px}
+.vazio p{font-family:var(--ft);font-size:.9rem;color:var(--muted)}
+/* NAV */
+.nav{position:fixed;bottom:0;left:0;right:0;z-index:200;padding:6px 12px 10px;display:flex;gap:8px;align-items:center;background:rgba(13,13,26,.97);backdrop-filter:blur(24px);border-top:1px solid var(--border);transition:background .35s}
+[data-theme="light"] .nav{background:rgba(255,245,248,.97)}
+.btn-home-nav{width:40px;height:40px;flex-shrink:0;background:var(--bg2);border:1px solid var(--border);border-radius:50%;font-size:.9rem;cursor:pointer;color:var(--white);display:flex;align-items:center;justify-content:center}
+.btn-cat-nav{flex:1;height:40px;border:none;background:var(--grad);border-radius:50px;font-family:var(--ft);font-size:.76rem;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;box-shadow:0 4px 14px rgba(255,107,157,.3)}
+/* SPIN */
+.spin{width:26px;height:26px;border:3px solid var(--border);border-top-color:var(--pink);border-radius:50%;animation:sp .8s linear infinite;margin:28px auto;display:block}
+@keyframes sp{to{transform:rotate(360deg)}}
+/* TOAST */
+.toast{position:fixed;top:70px;left:50%;transform:translateX(-50%) translateY(-80px);background:var(--card);border:1px solid var(--border);border-radius:16px;padding:10px 18px;font-size:.82rem;font-weight:700;text-align:center;max-width:calc(100vw - 32px);z-index:9999;opacity:0;pointer-events:none;transition:transform .4s cubic-bezier(.34,1.56,.64,1)}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+.toast.ok{border-color:var(--teal);color:var(--teal)}
+.toast.err{border-color:var(--red);color:var(--red)}
+</style>
+</head>
+<body>
+<header class="hdr">
+  <button class="btn-bk" onclick="history.back()"><i class="fa-solid fa-arrow-left"></i></button>
+  <div class="hdr-nome">A Minha Conta</div>
+  <button class="hb" onclick="toggleTheme()"><i data-theme-ico class="fa-solid fa-sun"></i></button>
+</header>
+
+<div class="ctn">
+  <!-- AUTH -->
+  <div id="authBox">
+    <div class="tabs">
+      <button class="tab on" id="tabL" onclick="mudarTab('login')">Entrar</button>
+      <button class="tab" id="tabR" onclick="mudarTab('registar')">Criar Conta</button>
+    </div>
+    <!-- LOGIN -->
+    <div class="form-card" id="fLogin">
+      <div class="fg"><label>Email</label><input class="fi" type="email" id="lEmail" placeholder="email@exemplo.com" autocomplete="email"/></div>
+      <div class="fg"><label>Password</label><input class="fi" type="password" id="lPass" placeholder="••••••••" onkeydown="if(event.key==='Enter')fazerLogin()"/></div>
+      <button class="btn-sub" id="btnL" onclick="fazerLogin()"><i class="fa-solid fa-arrow-right-to-bracket"></i> Entrar</button>
+      <p class="msg" id="lMsg"></p>
+    </div>
+    <!-- REGISTAR -->
+    <div class="form-card hidden" id="fReg">
+      <div class="fg"><label>Nome completo</label><input class="fi" type="text" id="rNome" placeholder="O seu nome completo"/></div>
+      <div class="row2">
+        <div class="fg"><label>Email</label><input class="fi" type="email" id="rEmail" placeholder="email@..."/></div>
+        <div class="fg"><label>Telefone</label><input class="fi" type="tel" id="rTel" placeholder="+244 9XX..."/></div>
+      </div>
+      <div class="fg"><label>Password</label><input class="fi" type="password" id="rPass" placeholder="Mínimo 6 caracteres"/></div>
+      <button class="btn-sub" id="btnR" onclick="fazerRegistar()"><i class="fa-solid fa-user-plus"></i> Criar Conta</button>
+      <p class="msg" id="rMsg"></p>
+    </div>
+  </div>
+
+  <!-- PERFIL -->
+  <div id="perfilBox" style="display:none">
+    <div class="perfil-card">
+      <div class="p-avatar">👤</div>
+      <div class="p-nome" id="pNome">—</div>
+      <div class="p-email" id="pEmail">—</div>
+    </div>
+    <div class="menu">
+      <a href="catalogo.html" class="mi"><div class="mi-ico"><i class="fa-solid fa-store"></i></div><div class="mi-txt"><strong>Ver Catálogo</strong><span>Explorar produtos</span></div><i class="fa-solid fa-chevron-right mi-arr"></i></a>
+      <a href="carrinho.html" class="mi"><div class="mi-ico"><i class="fa-solid fa-cart-shopping"></i></div><div class="mi-txt"><strong>Carrinho</strong><span>Itens no carrinho</span></div><i class="fa-solid fa-chevron-right mi-arr"></i></a>
+      <a href="sobre.html" class="mi"><div class="mi-ico"><i class="fa-solid fa-circle-info"></i></div><div class="mi-txt"><strong>Sobre a Loja</strong><span>Contactos e informações</span></div><i class="fa-solid fa-chevron-right mi-arr"></i></a>
+    </div>
+    <div style="font-family:var(--ft);font-size:.95rem;color:var(--pink);margin-bottom:10px;display:flex;align-items:center;gap:6px"><i class="fa-solid fa-clock-rotate-left"></i> As Minhas Encomendas</div>
+    <div id="encLista"><div class="spin"></div></div>
+    <br/>
+    <button class="btn-sair" onclick="fazerLogout()"><i class="fa-solid fa-right-from-bracket" style="margin-right:6px"></i>Terminar Sessão</button>
+  </div>
+</div>
+
+<div class="nav">
+  <button class="btn-home-nav" onclick="location.href='index.html'"><i class="fa-solid fa-house"></i></button>
+  <button class="btn-cat-nav" onclick="location.href='catalogo.html'"><i class="fa-solid fa-store"></i> Ver Catálogo</button>
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="catalogo.js?v=7"></script>
+<script>
+let _lojaC = {};
+document.addEventListener('DOMContentLoaded', async () => {
+  initTheme(); _syncThemeIcons();
+  await initCatalogo();
+  _lojaC = getLoja();
+  const cli = getCliente();
+  if (cli) mostrarPerfil(cli);
+});
+
+function mudarTab(t) {
+  document.getElementById('tabL').classList.toggle('on', t==='login');
+  document.getElementById('tabR').classList.toggle('on', t==='registar');
+  document.getElementById('fLogin').classList.toggle('hidden', t!=='login');
+  document.getElementById('fReg').classList.toggle('hidden', t!=='registar');
+}
+
+async function fazerLogin() {
+  const email = document.getElementById('lEmail').value.trim();
+  const pass = document.getElementById('lPass').value;
+  const msg = document.getElementById('lMsg');
+  const btn = document.getElementById('btnL');
+  if (!email||!pass) { setMsg(msg,'Preenche todos os campos.','err'); return; }
+  btn.disabled=true; btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> A entrar...';
+  try {
+    const d = await loginCliente(email, pass);
+    mostrarPerfil({nome:d.nome,email:d.email});
+    toast(`Bem-vindo, ${d.nome.split(' ')[0]}! 👋`,'ok');
+  } catch(e) {
+    setMsg(msg, e.message||'Erro de ligação.','err');
+    btn.disabled=false; btn.innerHTML='<i class="fa-solid fa-arrow-right-to-bracket"></i> Entrar';
+  }
+}
+
+async function fazerRegistar() {
+  const nome=document.getElementById('rNome').value.trim();
+  const email=document.getElementById('rEmail').value.trim();
+  const tel=document.getElementById('rTel').value.trim();
+  const pass=document.getElementById('rPass').value;
+  const msg=document.getElementById('rMsg');
+  const btn=document.getElementById('btnR');
+  if(!nome||!email||!pass){setMsg(msg,'Preenche os campos obrigatórios.','err');return;}
+  if(pass.length<6){setMsg(msg,'Password com mínimo 6 caracteres.','err');return;}
+  btn.disabled=true; btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> A criar...';
+  try {
+    await registarCliente(nome,email,tel,pass);
+    setMsg(msg,'✓ Conta criada! A entrar...','ok');
+    document.getElementById('lEmail').value=email;
+    document.getElementById('lPass').value=pass;
+    setTimeout(fazerLogin,1200);
+  } catch(e) {
+    setMsg(msg,e.message||'Erro de ligação.','err');
+    btn.disabled=false; btn.innerHTML='<i class="fa-solid fa-user-plus"></i> Criar Conta';
+  }
+}
+
+function setMsg(el,txt,t){el.textContent=txt;el.className='msg '+t;}
+
+function mostrarPerfil(cli) {
+  document.getElementById('authBox').style.display='none';
+  document.getElementById('perfilBox').style.display='block';
+  document.getElementById('pNome').textContent=cli.nome||'—';
+  document.getElementById('pEmail').textContent=cli.email||'—';
+  carregarEncs();
+}
+
+async function carregarEncs() {
+  const cont=document.getElementById('encLista');
+  try {
+    const encs=await getMinhasEncomendas();
+    if(!encs.length){cont.innerHTML='<div class="vazio"><i class="fa-solid fa-box-open"></i><p>Ainda não tens encomendas.</p></div>';return;}
+    cont.innerHTML=encs.map(e=>`<div class="enc-item" onclick="togEnc(this,'${e.ref}')">
+      <div class="enc-top"><span class="enc-ref">${e.ref}</span><span class="enc-est ${e.estado}">${tradEst(e.estado)}</span></div>
+      <div class="enc-bot"><span>${fmtData(e.criado_em)}</span><span class="enc-total">${kz(e.total)}</span></div>
+      <div class="enc-det" id="det-${e.ref}"><div class="spin" style="width:18px;height:18px;border-width:2px;margin:8px auto"></div></div>
+    </div>`).join('');
+  } catch(e) {cont.innerHTML='<p style="text-align:center;color:var(--muted);font-size:.82rem;padding:16px">Erro ao carregar.</p>';}
+}
+
+async function togEnc(el,ref) {
+  const det=document.getElementById('det-'+ref);
+  det.classList.toggle('open');
+  if(!det.dataset.ok) {
+    det.dataset.ok='1';
+    try {
+      const d=await getDetalheEncomenda(ref);
+      const wa=(_lojaC.whatsapp||'').replace(/\D/g,'');
+      det.innerHTML=(d.itens||[]).map(i=>`<div class="enc-linha"><span>${i.nome_produto}${i.nome_variacao?` (${i.nome_variacao})`:''} × ${i.quantidade}</span><span>${kz(i.preco_unit*i.quantidade)}</span></div>`).join('')+
+        `<div class="enc-linha" style="font-weight:700;margin-top:6px;padding-top:6px;border-top:1px solid var(--border)"><span>Total</span><span style="color:var(--pink)">${kz(d.total)}</span></div>`+
+        (wa?`<button class="btn-wa-enc" onclick="waEnc('${ref}',${d.total})"><i class="fa-brands fa-whatsapp" style="font-size:1.1rem"></i>Falar sobre este pedido</button>`:'');
+    } catch(e){det.innerHTML='<p style="color:var(--muted);font-size:.78rem;padding:6px">Erro.</p>';}
+  }
+}
+function waEnc(ref,total){const n=(_lojaC.whatsapp||'').replace(/\D/g,'');const m=encodeURIComponent(`Olá! Sobre a encomenda ${ref} (${kz(total)}).`);window.open(`https://wa.me/${n}?text=${m}`,'_blank');}
+async function fazerLogout(){await logoutCliente();document.getElementById('perfilBox').style.display='none';document.getElementById('authBox').style.display='block';toast('Sessão terminada.','ok');}
+function tradEst(e){return{pendente:'⏳ Pendente',confirmada:'✓ Confirmada',pronta:'📦 Pronta',entregue:'✅ Entregue',cancelada:'✕ Cancelada'}[e]||e;}
+function fmtData(d){if(!d)return'';return new Date(d).toLocaleDateString('pt',{day:'2-digit',month:'short',year:'numeric'});}
+let _tT=null;
+function toast(msg,t){clearTimeout(_tT);const el=document.getElementById('toast');el.textContent=msg;el.className='toast show '+(t||'ok');_tT=setTimeout(()=>el.classList.remove('show'),3200);}
+</script>
+</body>
+</html>
