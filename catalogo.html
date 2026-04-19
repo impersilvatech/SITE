@@ -244,7 +244,7 @@ window.addEventListener('error',function(e){
 <header class="hdr">
   <div class="hdr-top">
     <button class="btn-bk" onclick="window.location.href='index.html'"><i class="fa-solid fa-arrow-left"></i></button>
-    <div class="hdr-nome" id="hdr-nome" data-loja-nome></div>
+    <div class="hdr-nome" id="hdr-nome" data-loja-nome>CONFETI</div>
     <button class="hb" id="btn-wl-hdr" onclick="toggleWlView()" title="Wishlist">
       <i class="fa-solid fa-heart"></i><span class="hb-badge" id="wl-badge">0</span>
     </button>
@@ -323,14 +323,14 @@ window.addEventListener('error',function(e){
   <button class="btn-cart-nav" id="btn-cart" disabled onclick="irCarrinho()">Ver Carrinho</button>
 </div>
 <div class="toast" id="toast"></div>
-<script src="catalogo.js?v=6"></script>
+<script src="catalogo.js?v=7"></script>
 <script>
   let _loja,_cats,_prods,_catA='',_busca='',_ps=null,_qty=1,_viewMode='grid',_wlMode=false;
 
-  document.addEventListener('DOMContentLoaded',async ()=>{
+  document.addEventListener('DOMContentLoaded',async()=>{
     initTheme();_syncThemeIcons();applyThemeColors();
-    // sem gate de login — qualquer pessoa pode ver o catálogo
     await initCatalogo();
+    
     _loja=getLoja();_cats=getCategorias();_prods=getProdutos();
     document.getElementById('hdr-nome').textContent=_loja.nome;
     document.title='Catálogo | '+_loja.nome;

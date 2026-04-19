@@ -232,16 +232,27 @@ window.addEventListener('error',function(e){
   <button class="btn-add-nav" id="btn-add" onclick="addCart()">Adicionar ao Carrinho</button>
 </div>
 <div class="toast" id="toast"></div>
-<script src="catalogo.js?v=6"></script>
+<script src="catalogo.js?v=7"></script>
 <script>
   let _p=null,_qty=1;
-  document.addEventListener('DOMContentLoaded',async ()=>{
+  document.addEventListener('DOMContentLoaded',async()=>{
     initTheme();_syncThemeIcons();applyThemeColors();
     await initCatalogo();
     const id=parseInt(new URLSearchParams(window.location.search).get('id'));
     if(!id){window.location.href='catalogo.html';return;}
     _p=getProdutos().find(x=>x.id===id);
-    if(!_p){window.location.href='catalogo.html';return;}
+    if(!_p){
+      // Tentar buscar directamente da API
+      try{
+        const _r=await fetch('https://impersilvatech-api.3miliosilva.workers.dev/api/produtos/'+id);
+        const _d=await _r.json();
+        if(_d&&!_d.erro){const _cats=getCategorias();let feats=[];try{if(_d.features)feats=JSON.parse(_d.features);}catch(e){}
+        let specs=[];try{if(_d.specs)specs=JSON.parse(_d.specs);}catch(e){}
+        const pct=(_d.preco_original&&_d.preco_original>_d.preco_base)?Math.round((1-_d.preco_base/_d.preco_original)*100):0;
+        _p={id:_d.id,nome:_d.nome,descricao:_d.descricao||'',categoria:_d.categoria_id,preco:_d.preco_base||0,preco_orig:_d.preco_original||0,emoji:'🛍️',imagem:_d.imagem_url||'',galeria:[],disponivel:_d.disponivel!==0,etiqueta:pct>0?'promo':_d.destaque?'destaque':'',destaques:feats,specs:specs,stock:_d.stock!==undefined?_d.stock:-1,variacoes:(_d.variacoes||[]).map(v=>({id:v.id,nome:v.nome,preco_extra:v.preco_extra||0,disponivel:v.disponivel!==0}))};
+        }else{window.location.href='catalogo.html';return;}
+      }catch(e){window.location.href='catalogo.html';return;}
+    }
     carregar();actuBadge();actuWishlist();
   });
   let _carouselIdx=0, _carouselImgs=[];
