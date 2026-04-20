@@ -228,33 +228,78 @@ window.addEventListener('error',function(e){
 <div class="sec" id="sec-rel" style="display:none"><div class="sec-t">Veja também</div><div class="related-scroll"><div class="related-inner" id="rel-inner"></div></div></div>
 <div class="lightbox" id="lightbox" onclick="fecharLightbox()"><button class="lb-close"><i class="fa-solid fa-xmark"></i></button><img class="lb-img" id="lb-img" src="" alt="" style="display:none"/><span class="lb-emoji" id="lb-emoji" style="display:none"></span></div>
 <div class="nav">
-  <button class="btn-cart-ico" onclick="window.location.href='carrinho.html'"><i class="fa-solid fa-cart-shopping"></i><span class="badge-n" id="badge-n">0</span></button>
-  <button class="btn-add-nav" id="btn-add" onclick="addCart()">Adicionar ao Carrinho</button>
+  <a href="index.html" class="btn-cart-ico" title="Início"><i class="fa-solid fa-house"></i></a>
+  <button class="btn-add-nav" id="btn-add" onclick="addCart()"><i class="fa-solid fa-cart-shopping" style="margin-right:6px"></i>Adicionar ao Carrinho</button>
 </div>
 <div class="toast" id="toast"></div>
-<script src="catalogo.js?v=7"></script>
 <script>
-  let _p=null,_qty=1;
+  // produto.html — Cloudflare Worker directo (sem catalogo.js)
+  const _API = 'https://impersilvatech-api.3miliosilva.workers.dev';
+  let _p=null,_qty=1,_loja={},_cats=[];
+
   document.addEventListener('DOMContentLoaded',async()=>{
-    initTheme();_syncThemeIcons();applyThemeColors();
-    await initCatalogo();
+    apTema();
     const id=parseInt(new URLSearchParams(window.location.search).get('id'));
     if(!id){window.location.href='catalogo.html';return;}
-    _p=getProdutos().find(x=>x.id===id);
-    if(!_p){
-      // Tentar buscar directamente da API
-      try{
-        const _r=await fetch('https://impersilvatech-api.3miliosilva.workers.dev/api/produtos/'+id);
-        const _d=await _r.json();
-        if(_d&&!_d.erro){const _cats=getCategorias();let feats=[];try{if(_d.features)feats=JSON.parse(_d.features);}catch(e){}
-        let specs=[];try{if(_d.specs)specs=JSON.parse(_d.specs);}catch(e){}
-        const pct=(_d.preco_original&&_d.preco_original>_d.preco_base)?Math.round((1-_d.preco_base/_d.preco_original)*100):0;
-        _p={id:_d.id,nome:_d.nome,descricao:_d.descricao||'',categoria:_d.categoria_id,preco:_d.preco_base||0,preco_orig:_d.preco_original||0,emoji:'🛍️',imagem:_d.imagem_url||'',galeria:[],disponivel:_d.disponivel!==0,etiqueta:pct>0?'promo':_d.destaque?'destaque':'',destaques:feats,specs:specs,stock:_d.stock!==undefined?_d.stock:-1,variacoes:(_d.variacoes||[]).map(v=>({id:v.id,nome:v.nome,preco_extra:v.preco_extra||0,disponivel:v.disponivel!==0}))};
-        }else{window.location.href='catalogo.html';return;}
-      }catch(e){window.location.href='catalogo.html';return;}
+    try{
+      // Carregar loja, produto e categorias em paralelo
+      const [lR, pR, cR] = await Promise.all([
+        fetch(_API+'/api/loja').then(r=>r.json()).catch(()=>({})),
+        fetch(_API+'/api/produtos/'+id).then(r=>r.json()),
+        fetch(_API+'/api/categorias').then(r=>r.json()).catch(()=>[])
+      ]);
+      _loja = lR || {};
+      _cats = Array.isArray(cR) ? cR : [];
+      if(!pR||pR.erro){window.location.href='catalogo.html';return;}
+      // Mapear produto
+      let feats=[]; try{if(pR.features)feats=JSON.parse(pR.features);}catch(e){}
+      let specs=[]; try{if(pR.specs)specs=JSON.parse(pR.specs);}catch(e){}
+      let galeria=[]; try{if(pR.imagens_extra)galeria=JSON.parse(pR.imagens_extra);}catch(e){}
+      const pct=(pR.preco_original&&pR.preco_original>pR.preco_base)?Math.round((1-pR.preco_base/pR.preco_original)*100):0;
+      _p={
+        id:pR.id, nome:pR.nome, descricao:pR.descricao||'',
+        categoria:pR.categoria_id, preco:pR.preco_base||0,
+        preco_orig:pR.preco_original||0, emoji:'🛍️',
+        imagem:pR.imagem_url||'', galeria:galeria,
+        disponivel:pR.disponivel!==0,
+        etiqueta:pct>0?'promo':pR.destaque?'destaque':'',
+        destaques:feats, specs:specs,
+        stock:pR.stock!==undefined?pR.stock:-1,
+        variacoes:(pR.variacoes||[]).map(v=>({id:v.id,nome:v.nome,preco_extra:v.preco_extra||0,disponivel:v.disponivel!==0}))
+      };
+      // Aplicar cores da loja
+      if(_loja.cor_primaria)document.documentElement.style.setProperty('--pink',_loja.cor_primaria);
+      if(_loja.cor_secundaria)document.documentElement.style.setProperty('--purple',_loja.cor_secundaria);
+      if(_loja.whatsapp){
+        const n=_loja.whatsapp.replace(/\D/g,'');
+        const fabEl=document.getElementById('fabWa');
+        if(fabEl)fabEl.href=`https://wa.me/${n}?text=Olá! Tenho interesse em: ${_p.nome}`;
+      }
+    }catch(e){
+      console.error('Erro ao carregar produto:',e);
+      window.location.href='catalogo.html';return;
     }
     carregar();actuBadge();actuWishlist();
   });
+  // Utils standalone (sem catalogo.js)
+  function getCarrinho(){try{return JSON.parse(localStorage.getItem('cf_carrinho')||'[]');}catch(e){return[];}}
+  function salvarCarrinho(c){localStorage.setItem('cf_carrinho',JSON.stringify(c));}
+  function getWishlist(){try{return JSON.parse(localStorage.getItem('cf_wl')||'[]');}catch(e){return[];}}
+  function isWishlisted(id){return getWishlist().includes(id);}
+  function toggleWishlist(id){
+    var wl=getWishlist(),idx=wl.indexOf(id);
+    if(idx>=0){wl.splice(idx,1);}else{wl.push(id);}
+    localStorage.setItem('cf_wl',JSON.stringify(wl));
+    return idx<0;
+  }
+  function kz(v){const sym=(_loja&&_loja.simbolo_moeda)||'Kz';return sym+' '+Number(v||0).toLocaleString('pt');}
+  function mudarTema(){const t=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',t);localStorage.setItem('tema',t);const el=document.getElementById('tIco');if(el)el.className=t==='dark'?'fa-solid fa-sun':'fa-solid fa-moon';}
+
+
+  // Helpers de tema (sem catalogo.js)
+  function apTema(){const t=localStorage.getItem('tema')||'dark';document.documentElement.setAttribute('data-theme',t);const el=document.getElementById('tIco');if(el)el.className=t==='dark'?'fa-solid fa-sun':'fa-solid fa-moon';}
+  function getLoja(){return _loja;}
+  function getCategorias(){return _cats;}
   let _carouselIdx=0, _carouselImgs=[];
   function carregar(){
     const p=_p;
@@ -377,7 +422,24 @@ window.addEventListener('error',function(e){
     lb.classList.add('on');document.body.style.overflow='hidden';
   }
   function fecharLightbox(){document.getElementById('lightbox').classList.remove('on');document.body.style.overflow='';}
-  function actuBadge(){const c=getCarrinho(),q=c.reduce((s,i)=>s+i.quantidade,0);const b=document.getElementById('badge-n');b.textContent=q;b.classList.toggle('on',q>0);}
+  function actuBadge(){
+    const c=JSON.parse(localStorage.getItem('cf_carrinho')||'[]');
+    const q=c.reduce((s,i)=>s+i.quantidade,0);
+    const b=document.getElementById('badge-n');
+    if(b){b.textContent=q;b.style.display=q>0?'flex':'none';}
+    const sym=(_loja&&_loja.simbolo_moeda)||'Kz';
+    const btnAdd=document.getElementById('btn-add');
+    if(btnAdd&&_p){
+      if(!_p.disponivel){btnAdd.disabled=true;btnAdd.innerHTML='Produto Esgotado 🙈';}
+      else{
+        btnAdd.disabled=false;
+        const vSel=document.querySelector('.variacao-btn.on');
+        const extra=vSel?parseFloat(vSel.dataset.extra)||0:0;
+        const val=(_p.preco+extra)*_qty;
+        btnAdd.innerHTML=`<i class="fa-solid fa-cart-shopping" style="margin-right:6px"></i>Adicionar — ${sym} ${val.toLocaleString('pt')}`;
+      }
+    }
+  }
   function actuWishlist(){
     if(!_p) return;
     const btn=document.getElementById('btn-wl');

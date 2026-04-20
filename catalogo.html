@@ -304,29 +304,33 @@ body{font-family:var(--fb);background:var(--bg);color:var(--white);
   font-family:var(--ft);font-size:.85rem;color:#fff;cursor:pointer;text-decoration:none}
 
 /* ── BOTTOM NAV ── */
-.fab-wa{position:fixed;bottom:82px;right:13px;width:50px;height:50px;
+.fab-wa{position:fixed;bottom:78px;right:13px;width:50px;height:50px;
   background:#25D366;color:#fff;border-radius:50%;display:flex;
   align-items:center;justify-content:center;font-size:1.5rem;
   box-shadow:0 4px 16px rgba(37,211,102,.4);z-index:140;
   text-decoration:none;transition:var(--tr)}
 .fab-wa:active{transform:scale(.92)}
 .bnav{position:fixed;bottom:0;left:0;right:0;z-index:200;
-  padding:6px 0 max(env(safe-area-inset-bottom,0px),10px);
-  display:flex;justify-content:space-around;align-items:center;
+  padding:8px 12px max(env(safe-area-inset-bottom,0px),12px);
+  display:flex;gap:10px;align-items:center;
   background:rgba(13,13,26,.97);backdrop-filter:blur(24px);
   border-top:1px solid var(--border)}
 [data-theme="light"] .bnav{background:rgba(255,245,248,.97)}
-.ni{display:flex;flex-direction:column;align-items:center;gap:2px;
-  color:var(--muted);font-size:.52rem;font-weight:600;text-transform:uppercase;
-  letter-spacing:.04em;text-decoration:none;padding:0 11px;transition:var(--tr)}
-.ni i{font-size:1.15rem}
-.ni.on,.ni:hover{color:var(--pink)}
-.ni-bw{position:relative}
-.ni-b{position:absolute;top:-16px;right:-8px;background:var(--red);
-  color:#fff;border-radius:50%;width:14px;height:14px;font-size:.44rem;
-  font-weight:800;display:none;align-items:center;justify-content:center;
-  border:1.5px solid var(--bg)}
-.ni-b.on{display:flex}
+.nav-home{width:44px;height:44px;border-radius:50%;background:var(--card);
+  border:1px solid var(--border);display:flex;align-items:center;
+  justify-content:center;font-size:1rem;color:var(--white);
+  text-decoration:none;flex-shrink:0;transition:var(--tr)}
+.nav-home:hover{border-color:var(--pink);color:var(--pink)}
+.nav-carrinho{flex:1;height:44px;background:var(--grad);border:none;
+  border-radius:50px;font-family:var(--ft);font-size:.82rem;color:#fff;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  gap:9px;box-shadow:0 4px 14px rgba(255,107,157,.3);
+  transition:var(--tr);text-decoration:none}
+.nav-carrinho:hover{filter:brightness(1.1);transform:translateY(-1px)}
+.nav-carrinho:disabled{opacity:.25;cursor:default;background:var(--border);
+  box-shadow:none;transform:none}
+.nav-cart-n{background:rgba(255,255,255,.22);border-radius:50px;
+  padding:1px 9px;font-size:.7rem}
 
 /* ── TOAST ── */
 .toast{position:fixed;top:66px;left:50%;
@@ -341,6 +345,47 @@ body{font-family:var(--fb);background:var(--bg);color:var(--white);
 .toast.ok,.toast.add{border-color:rgba(255,107,157,.4);color:var(--pink)}
 .toast.err{border-color:rgba(255,71,87,.4);color:var(--red)}
 .toast.wl{border-color:rgba(255,209,102,.4);color:var(--yellow)}
+
+/* ── DRAWER ── */
+.drawer-ov{position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.6);
+  backdrop-filter:blur(3px);opacity:0;pointer-events:none;transition:opacity .25s}
+.drawer-ov.on{opacity:1;pointer-events:all}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(280px,85vw);z-index:401;
+  background:var(--card);border-left:1px solid var(--border);
+  display:flex;flex-direction:column;transform:translateX(100%);
+  transition:transform .32s cubic-bezier(.4,0,.2,1)}
+.drawer.on{transform:translateX(0)}
+[data-theme="light"] .drawer{background:var(--bg2)}
+.drawer-head{padding:18px 16px 14px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between}
+.drawer-logo{font-family:var(--ft);font-size:1.1rem;background:var(--grad);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.drawer-x{width:30px;height:30px;border-radius:50%;background:none;
+  border:1px solid var(--border);display:flex;align-items:center;
+  justify-content:center;font-size:.8rem;cursor:pointer;color:var(--muted);
+  transition:var(--tr)}
+.drawer-x:hover{border-color:var(--red);color:var(--red)}
+.drawer-body{flex:1;overflow-y:auto;padding:12px}
+.drawer-item{display:flex;align-items:center;gap:12px;padding:13px 14px;
+  border-radius:var(--r,12px);cursor:pointer;transition:var(--tr);
+  text-decoration:none;color:var(--white);margin-bottom:4px;width:100%;
+  background:none;border:none;font-family:var(--fb);font-size:.92rem;text-align:left}
+.drawer-item:hover,.drawer-item:active{background:rgba(255,107,157,.08)}
+.drawer-item i{width:22px;text-align:center;color:var(--pink);font-size:1rem;flex-shrink:0}
+.drawer-item .di-sub{font-size:.7rem;color:var(--muted);display:block;margin-top:1px}
+.drawer-sep{height:1px;background:var(--border);margin:8px 0}
+.drawer-auth{margin:10px 0;padding:13px 14px;background:rgba(255,107,157,.06);
+  border:1px solid rgba(255,107,157,.2);border-radius:var(--r,12px)}
+.drawer-auth p{font-size:.78rem;color:var(--muted);margin-bottom:10px;line-height:1.5}
+.drawer-auth a{display:flex;align-items:center;justify-content:center;gap:7px;
+  padding:10px;background:var(--grad);border:none;border-radius:50px;
+  font-family:var(--ft);font-size:.78rem;color:#fff;text-decoration:none;
+  cursor:pointer;transition:var(--tr);width:100%}
+.drawer-auth a:hover{filter:brightness(1.1)}
+.drawer-cli{padding:12px 14px;background:rgba(6,214,160,.06);
+  border:1px solid rgba(6,214,160,.2);border-radius:var(--r,12px);margin:10px 0}
+.drawer-cli-nome{font-family:var(--ft);font-size:.9rem;color:var(--white);margin-bottom:2px}
+.drawer-cli-email{font-size:.72rem;color:var(--muted)}
 </style>
 </head>
 <body>
@@ -357,13 +402,10 @@ body{font-family:var(--fb);background:var(--bg);color:var(--white);
   <div class="hdr-row1">
     <button class="hbtn" onclick="history.back()"><i class="fa-solid fa-arrow-left"></i></button>
     <div class="hdr-title" id="hdrTitle">Catálogo</div>
-    <a href="carrinho.html" class="hbtn">
-      <i class="fa-solid fa-cart-shopping"></i>
-      <span class="hbtn-b" id="hB">0</span>
-    </a>
     <button class="hbtn" onclick="mudarTema()">
       <i id="tIco" class="fa-solid fa-sun"></i>
     </button>
+    <button class="hbtn" onclick="abrirDrawer()" id="menuBtn"><i class="fa-solid fa-bars"></i></button>
   </div>
   <div class="sbar">
     <span class="sbar-ico"><i class="fa-solid fa-magnifying-glass"></i></span>
@@ -443,15 +485,45 @@ body{font-family:var(--fb);background:var(--bg);color:var(--white);
 
 <a href="#" class="fab-wa" id="fabWa" target="_blank"><i class="fa-brands fa-whatsapp"></i></a>
 <nav class="bnav">
-  <a href="index.html" class="ni"><i class="fa-solid fa-house"></i><span>Início</span></a>
-  <a href="catalogo.html" class="ni on"><i class="fa-solid fa-store"></i><span>Catálogo</span></a>
-  <a href="carrinho.html" class="ni">
+  <a href="index.html" class="nav-home" title="Início"><i class="fa-solid fa-house"></i></a>
+  <a href="carrinho.html" class="nav-carrinho" id="navCart">
     <i class="fa-solid fa-cart-shopping"></i>
-    <span class="ni-bw">Carrinho<span class="ni-b" id="niB"></span></span>
+    <span>Ver Carrinho</span>
+    <span class="nav-cart-n" id="niB" style="display:none">0</span>
   </a>
-  <a href="conta.html" class="ni"><i class="fa-solid fa-user"></i><span>Conta</span></a>
-  <a href="sobre.html" class="ni"><i class="fa-solid fa-circle-info"></i><span>Sobre</span></a>
 </nav>
+<!-- DRAWER -->
+<div class="drawer-ov" id="drOv" onclick="fecharDrawer()"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-head">
+    <span class="drawer-logo" id="drawerLogo">Menu</span>
+    <button class="drawer-x" onclick="fecharDrawer()"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+  <div class="drawer-body">
+    <!-- Estado do cliente (preenchido pelo JS) -->
+    <div id="drawerAuth"></div>
+    <div class="drawer-sep"></div>
+    <!-- Acompanhar pedido -->
+    <button class="drawer-item" onclick="fecharDrawer();location.href='conta.html#pedidos'">
+      <i class="fa-solid fa-clock-rotate-left"></i>
+      <div><span>Acompanhar Pedido</span><span class="di-sub">Ver estado da encomenda</span></div>
+    </button>
+    <a href="conta.html" class="drawer-item" onclick="fecharDrawer()">
+      <i class="fa-solid fa-user"></i>
+      <div><span>A Minha Conta</span><span class="di-sub">Login, registo e encomendas</span></div>
+    </a>
+    <a href="sobre.html" class="drawer-item" onclick="fecharDrawer()">
+      <i class="fa-solid fa-circle-info"></i>
+      <div><span>Sobre a Loja</span><span class="di-sub">Contactos, horários e localização</span></div>
+    </a>
+    <div class="drawer-sep"></div>
+    <button class="drawer-item" onclick="fecharDrawer();mudarTema()">
+      <i class="fa-solid fa-circle-half-stroke"></i>
+      <div><span>Mudar Tema</span><span class="di-sub">Claro / Escuro</span></div>
+    </button>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -847,14 +919,43 @@ function getCarrinho() { return JSON.parse(localStorage.getItem('cf_carrinho') |
 function setCart(c) { localStorage.setItem('cf_carrinho', JSON.stringify(c)); }
 function updB() {
   const q2 = getCarrinho().reduce((s,i) => s+i.quantidade, 0);
-  const hb = document.getElementById('hB');
+  // Nav carrinho badge
   const nb = document.getElementById('niB');
-  hb.textContent = q2; hb.classList.toggle('on', q2 > 0);
-  nb.textContent = q2; nb.classList.toggle('on', q2 > 0);
+  if (nb) { nb.textContent = q2; nb.style.display = q2 > 0 ? 'inline' : 'none'; }
+  // Wishlist badge
   const wl = getWl().length;
   const wn = document.getElementById('wlN');
-  wn.style.display = wl ? 'inline' : 'none';
-  wn.textContent = wl;
+  if (wn) { wn.style.display = wl ? 'inline' : 'none'; wn.textContent = wl; }
+}
+
+// Drawer
+function abrirDrawer() {
+  document.getElementById('drOv').classList.add('on');
+  document.getElementById('drawer').classList.add('on');
+  document.body.style.overflow = 'hidden';
+  // Preencher estado da auth
+  const cli = JSON.parse(localStorage.getItem('cf_cliente') || 'null');
+  const authEl = document.getElementById('drawerAuth');
+  if (loja.nome) document.getElementById('drawerLogo').textContent = loja.nome;
+  if (cli) {
+    authEl.innerHTML = `<div class="drawer-cli">
+      <div class="drawer-cli-nome">👤 ${cli.nome||'Cliente'}</div>
+      <div class="drawer-cli-email">${cli.email||''}</div>
+    </div>`;
+  } else {
+    authEl.innerHTML = `<div class="drawer-auth">
+      <p>Cria uma conta para acompanhar as tuas encomendas em tempo real.</p>
+      <a href="conta.html" onclick="fecharDrawer()">
+        <i class="fa-solid fa-arrow-right-to-bracket"></i> Entrar / Criar Conta
+      </a>
+    </div>`;
+  }
+}
+
+function fecharDrawer() {
+  document.getElementById('drOv').classList.remove('on');
+  document.getElementById('drawer').classList.remove('on');
+  document.body.style.overflow = '';
 }
 
 // ── PULL TO REFRESH ──────────────────────────────

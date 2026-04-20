@@ -604,11 +604,13 @@ async function saveProd(){
   const body={nome,slug,nome_en:v('pNomeEn')||null,descricao:v('pDesc')||null,preco_base:preco,preco_original:parseFloat(v('pPrecoO'))||null,categoria_id:parseInt(v('pCat'))||null,imagem_url:imgUrl||null,destaque:document.getElementById('pDest').checked?1:0,disponivel:document.getElementById('pDisp').checked?1:0,stock:parseInt(v('pStock'))||-1,features,specs,variacoes:vars};
   try{
     const method=id?'PUT':'POST',url=id?`${API}/api/produtos/${id}`:`${API}/api/produtos`;
-    const r=await fetch(url,{method,headers:H(),body:JSON.stringify(body)});const d=await r.json();
-    if(d.erro){toast(d.erro,'err');return;}
+    const r=await fetch(url,{method,headers:H(),body:JSON.stringify(body)});
+    let d;
+    try{d=await r.json();}catch(je){toast(`Erro HTTP ${r.status} — verifica o Worker`,'err');return;}
+    if(d.erro){toast(`Erro: ${d.erro}`,'err');return;}
     inval();toast(id?'✓ Produto actualizado! Aparece em ~30s':'✓ Produto criado! Aparece em ~30s','ok');
     fechM('mP');await carProds();renderProds();renderDash();carStats();
-  }catch(e){toast('Erro ao guardar','err');}
+  }catch(e){toast(`Erro de ligação: ${e.message}`,'err');}
 }
 
 async function delP(id,nome){
@@ -714,8 +716,9 @@ async function saveCat(){
   const body={nome,slug,nome_en:v('cNomeEn')||null,descricao:v('cDesc')||null,icone:v('cIco')||'🏷️',ordem:parseInt(v('cOrdem'))||0,ativa:document.getElementById('cActiva').checked?1:0};
   try{
     const method=id?'PUT':'POST',url=id?`${API}/api/categorias/${id}`:`${API}/api/categorias`;
-    const r=await fetch(url,{method,headers:H(),body:JSON.stringify(body)});const d=await r.json();
-    if(d.erro){toast(d.erro,'err');return;}
+    const r=await fetch(url,{method,headers:H(),body:JSON.stringify(body)});
+    let d;try{d=await r.json();}catch(je){toast(`Erro HTTP ${r.status}`,'err');return;}
+    if(d.erro){toast(`Erro: ${d.erro}`,'err');return;}
     inval();toast(id?'✓ Categoria actualizada!':'✓ Categoria criada!','ok');fechM('mC');await carCats();renderCats();
   }catch(e){toast('Erro ao guardar','err');}
 }
