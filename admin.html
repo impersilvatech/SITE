@@ -189,10 +189,8 @@ input:checked+.sw-s{background:var(--grad)}input:checked+.sw-s::before{transform
     <div class="tb-loja" id="tbL">A carregar...</div>
     <div class="tb-acts">
       <button class="tbb" onclick="toggleSb()"><i class="fa-solid fa-bars"></i></button>
-      <!-- BOTÃO TEMA (restaurado) -->
-      <button class="tbb" onclick="mudarTema()" id="temaBtn" title="Mudar Tema"><i class="fa-solid fa-moon" id="tIco"></i></button>
-      <button class="tbb" onclick="window.open('index.html','_blank')" title="Ver loja"><i class="fa-solid fa-arrow-up-right-from-square"></i></button>
-      <button class="tbb" onclick="doLogout()" title="Sair"><i class="fa-solid fa-right-from-bracket"></i></button>
+      <button class="tbb" onclick="mudarTema()" id="temaBtn" title="Tema"><i class="fa-solid fa-moon" id="tIco"></i></button>
+      <button class="tbb" onclick="abrirAdminDrawer()" title="Mais opções"><i class="fa-solid fa-ellipsis-vertical"></i></button>
     </div>
   </div>
   <div class="ab">
@@ -368,6 +366,20 @@ input:checked+.sw-s{background:var(--grad)}input:checked+.sw-s::before{transform
   </div>
 </div>
 
+<!-- Admin Drawer -->
+<div id="adOv" onclick="fecharAdminDrawer()" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.6);backdrop-filter:blur(3px)"></div>
+<div id="adDrawer" style="position:fixed;top:50px;right:0;bottom:0;width:220px;z-index:501;background:var(--card);border-left:1px solid var(--border);transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column">
+  <div style="padding:14px 16px;border-bottom:1px solid var(--border);font-family:var(--ft);font-size:.88rem;color:var(--pink)">Mais Opções</div>
+  <div style="padding:8px;flex:1;overflow-y:auto">
+    <a href="index.html" target="_blank" style="display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:var(--r);color:var(--white);text-decoration:none;font-size:.85rem;transition:var(--tr)" onmouseover="this.style.background='rgba(255,107,157,.08)'" onmouseout="this.style.background=''">
+      <i class="fa-solid fa-arrow-up-right-from-square" style="color:var(--pink);width:18px"></i> Ver Site ao Vivo
+    </a>
+    <button onclick="fecharAdminDrawer();doLogout()" style="width:100%;display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:var(--r);color:var(--red);background:none;border:none;font-family:var(--fb);font-size:.85rem;cursor:pointer;text-align:left;transition:var(--tr)" onmouseover="this.style.background='rgba(255,71,87,.08)'" onmouseout="this.style.background=''">
+      <i class="fa-solid fa-right-from-bracket" style="width:18px"></i> Terminar Sessão
+    </button>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -380,6 +392,15 @@ let _tok='',_loja={},_cats=[],_prods=[],_encs=[],_clis=[];
 let _eF=[],_pF=[],_sbOpen=false,_pg='dash',_cfgS='id';
 
 // ── TEMA ─────────────────────────────────────────
+function abrirAdminDrawer(){
+  document.getElementById('adOv').style.display='block';
+  document.getElementById('adDrawer').style.transform='translateX(0)';
+}
+function fecharAdminDrawer(){
+  document.getElementById('adOv').style.display='none';
+  document.getElementById('adDrawer').style.transform='translateX(100%)';
+}
+
 function mudarTema(){
   const t=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';
   document.documentElement.setAttribute('data-theme',t);
@@ -455,7 +476,11 @@ async function carStats(){
     document.getElementById('stE').textContent=s.encomendas??'—';
     document.getElementById('stP').textContent=s.produtos??'—';
     document.getElementById('stC').textContent=s.clientes??'—';
-    document.getElementById('stR').textContent=s.receita!=null?kz(s.receita):'—';
+    // Receita = apenas encomendas pagas ou entregues
+    const receitaPaga = _encs
+      .filter(e => e.pagamento_estado === 'pago' || e.estado === 'entregue')
+      .reduce((sum, e) => sum + (e.total || 0), 0);
+    document.getElementById('stR').textContent = receitaPaga > 0 ? kz(receitaPaga) : (s.receita != null ? kz(s.receita) : '—');
   }catch(e){}
 }
 async function carClis(){
@@ -800,7 +825,11 @@ function cfgT(sec,btn){
       </div>
       <div class="fg"><label>Branch</label><input class="fi" id="lGhBranch" value="${esc(ghBranch)}" placeholder="main" style="margin-bottom:0"/></div>
       <div class="info-box info-warn" style="margin-top:8px">⚠ O token deve ter permissão <strong>Contents: read & write</strong> no repositório. Para criar: github.com → Settings → Developer settings → Personal access tokens → Fine-grained tokens.</div>
-      <button class="btn btn-t btn-sm" onclick="salvarGhTk()" style="margin-top:8px"><i class="fa-solid fa-floppy-disk"></i> Guardar Configurações GitHub</button>
+      <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+      <button class="btn btn-t btn-sm" onclick="salvarGhTk()"><i class="fa-solid fa-floppy-disk"></i> Guardar</button>
+      <button class="btn btn-o btn-sm" onclick="testarGitHub()"><i class="fa-brands fa-github"></i> Testar Ligação</button>
+    </div>
+    <p id="ghTestResult" style="font-size:.72rem;margin-top:7px;display:none"></p>
       </div>`,
 
     not:`<div class="ac"><div class="ach"><div class="act"><i class="fa-solid fa-bell"></i> Notificações</div></div>
@@ -854,6 +883,26 @@ async function saveLoja(){
   }catch(e){toast('Erro ao guardar','err');}
 }
 
+async function testarGitHub(){
+  const t=document.getElementById('lGhTk')?.value.trim();
+  const u=document.getElementById('lGhUser')?.value.trim()||localStorage.getItem('adm_gh_user');
+  const r2=document.getElementById('lGhRepo')?.value.trim()||localStorage.getItem('adm_gh_repo');
+  const res=document.getElementById('ghTestResult');
+  if(!t||!u||!r2){res.textContent='⚠ Preenche o token, utilizador e repositório primeiro.';res.style.color='var(--red)';res.style.display='block';return;}
+  res.textContent='A verificar...';res.style.color='var(--muted)';res.style.display='block';
+  try{
+    const resp=await fetch(`https://api.github.com/repos/${u}/${r2}`,{headers:{'Authorization':'token '+t}});
+    const d=await resp.json();
+    if(resp.ok){
+      res.textContent=`✓ Ligado! Repositório: ${d.full_name} (${d.private?'privado':'público'})`;
+      res.style.color='var(--teal)';
+    }else{
+      res.textContent=`✕ Erro ${resp.status}: ${d.message||'Token ou repositório inválido'}`;
+      res.style.color='var(--red)';
+    }
+  }catch(e){res.textContent='✕ Erro de ligação: '+e.message;res.style.color='var(--red)';}
+}
+
 function salvarGhTk(){
   const t=document.getElementById('lGhTk')?.value.trim();
   const u=document.getElementById('lGhUser')?.value.trim();
@@ -864,6 +913,20 @@ function salvarGhTk(){
   if(r2)localStorage.setItem('adm_gh_repo',r2);
   localStorage.setItem('adm_gh_branch',b);
   toast('✓ Configurações GitHub guardadas!','ok');
+}
+
+async function marcarPago(ref, pagar){
+  try{
+    await fetch(`${API}/api/admin/encomendas/${ref}/estado`,{method:'PUT',headers:H(),
+      body:JSON.stringify({pagamento_estado:pagar?'pago':'pendente'})});
+    const i=_encs.findIndex(e=>e.ref===ref);
+    if(i>=0)_encs[i].pagamento_estado=pagar?'pago':'pendente';
+    toast(pagar?'✓ Marcado como pago!':'Pagamento desmarcado','ok');
+    // Reset detail so it reloads
+    const inner=document.getElementById('dti-'+ref);
+    if(inner)delete inner.dataset.ok;
+    carStats();
+  }catch(e){toast('Erro ao actualizar','err');}
 }
 
 async function alterarTok(){

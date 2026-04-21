@@ -8,14 +8,7 @@ if('serviceWorker' in navigator){
   navigator.serviceWorker.register('./sw.js').catch(()=>{});
 }
 // Ouvir mensagem do Service Worker — recarregar quando há nova versão
-navigator.serviceWorker.addEventListener('message',function(e){
-  if(e.data&&e.data.type==='SW_UPDATED'){
-    if(!sessionStorage.getItem('_cf_sw_reloaded')){
-      sessionStorage.setItem('_cf_sw_reloaded','1');
-      location.reload();
-    }
-  }
-});
+
 // Se catalogo.js falhou (ecrã preto) — detectar e forçar reload sem cache
 window.addEventListener('load', function(){
   if(typeof LOJA_DEFAULT==='undefined'||typeof getLoja==='undefined'){
@@ -166,23 +159,7 @@ body{font-family:var(--fb);background:var(--bg);color:var(--white);min-height:10
 @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
 .anim{animation:fadeUp .35s ease both}
 </style>
-<script>
-(function(){
-  try{
-    // Se catalogo.js carregou mas a versão no URL não bate certo com cf_versao → recarregar
-    var scripts=document.querySelectorAll('script[src*="catalogo.js"]');
-    if(!scripts.length) return;
-    var src=scripts[0].getAttribute('src')||'';
-    var urlV=parseInt((src.match(/\?v=(\d+)/)||[])[1]||0);
-    var lojaV=typeof LOJA_DEFAULT!=='undefined'?(LOJA_DEFAULT.cf_versao||0):0;
-    // Se versão do URL é diferente de cf_versao publicado → cache desactualizada → recarregar
-    if(urlV>0&&lojaV>0&&urlV!==lojaV){
-      var bust='?_v='+lojaV;
-      if(location.search!==bust) window.location.replace(location.pathname+bust);
-    }
-  }catch(_){}
-})();
-</script>
+<!-- version check removido: produto.html não usa catalogo.js -->
 </head>
 <body>
 <script>
