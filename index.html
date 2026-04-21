@@ -19,9 +19,9 @@ if('serviceWorker' in navigator){ navigator.serviceWorker.register('./sw.js').ca
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet"/>
 <style>
 :root{--bg:#0d0d1a;--bg2:#14142b;--card:#1a1a32;--border:#2a2a4a;--pink:#ff6b9d;--purple:#b14ae8;--teal:#06d6a0;--yellow:#ffd166;--coral:#ff9f43;--red:#ff4757;--white:#fff;--muted:#9898bb;--muted2:#4a4a6a;--ft:'Fredoka One',cursive;--fb:'Nunito',sans-serif;--r:14px;--tr:all .3s cubic-bezier(.4,0,.2,1);--grad:linear-gradient(135deg,#ff6b9d,#b14ae8)}
-[data-theme="light"]{--bg:#fff5f8;--bg2:#fff;--card:#fff;--border:#f0d6e8;--white:#1a0a2e;--muted:#7a5a8a;--muted2:#ccc}
+[data-theme="light"]{--bg:#fff5f8;--bg2:#fff;--card:#fff;--border:#f0d6e8;--white:#1a0a2e;--muted:#7a5a8a;--muted2:#b0a0b8;--pink:#d4437d;--purple:#7a2fb0;--teal:#048a65;--red:#d63547}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-body{font-family:var(--fb);background:var(--bg);color:var(--white);min-height:100vh;padding-bottom:80px;transition:background .35s,color .35s;overflow-x:hidden}
+body{font-family:var(--fb);background:var(--bg);color:var(--white);min-height:100vh;padding-bottom:68px;transition:background .35s,color .35s;overflow-x:hidden}
 
 /* HDR */
 .hdr{position:sticky;top:0;z-index:100;background:rgba(13,13,26,.97);backdrop-filter:blur(24px);border-bottom:1px solid var(--border);padding:10px 14px;display:flex;align-items:center;justify-content:space-between;transition:background .35s}
@@ -122,16 +122,16 @@ body{font-family:var(--fb);background:var(--bg);color:var(--white);min-height:10
 .empty-msg{text-align:center;padding:30px;color:var(--muted);font-size:.85rem}
 
 /* NAV */
-.nav{position:fixed;bottom:0;left:0;right:0;z-index:200;padding:6px 12px 10px;display:flex;gap:8px;align-items:center;background:rgba(13,13,26,.97);backdrop-filter:blur(24px);border-top:1px solid var(--border);transition:background .35s}
+.nav{position:fixed;bottom:0;left:0;right:0;z-index:200;padding:6px 10px max(env(safe-area-inset-bottom,0px),8px);display:flex;gap:8px;align-items:center;background:rgba(13,13,26,.97);backdrop-filter:blur(24px);border-top:1px solid var(--border);transition:background .35s}
 [data-theme="light"] .nav{background:rgba(255,245,248,.97)}
-.btn-home-nav{width:40px;height:40px;flex-shrink:0;background:var(--bg2);border:1px solid var(--border);border-radius:50%;font-size:.9rem;cursor:pointer;color:var(--white);display:flex;align-items:center;justify-content:center;transition:var(--tr)}
+.btn-home-nav{width:38px;height:38px;flex-shrink:0;background:var(--bg2);border:1px solid var(--border);border-radius:50%;font-size:.9rem;cursor:pointer;color:var(--white);display:flex;align-items:center;justify-content:center;transition:var(--tr)}
 .nav-links{display:flex;gap:4px;align-items:center}
 .nl{display:flex;flex-direction:column;align-items:center;gap:1px;padding:0 10px;color:var(--muted);font-size:.52rem;text-decoration:none;transition:var(--tr);position:relative}
 .nl i{font-size:1.1rem}
 .nl.on,.nl:hover{color:var(--pink)}
 .nl-b{position:absolute;top:-2px;right:4px;width:13px;height:13px;border-radius:50%;background:var(--red);color:#fff;font-size:.44rem;font-weight:700;display:none;align-items:center;justify-content:center}
 .nl-b.on{display:flex}
-.btn-cart-nav{flex:1;height:40px;border:none;background:var(--grad);border-radius:50px;font-family:var(--ft);font-size:.76rem;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 14px rgba(255,107,157,.3);transition:var(--tr)}
+.btn-cart-nav{flex:1;height:38px;border:none;background:var(--grad);border-radius:50px;font-family:var(--ft);font-size:.76rem;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 14px rgba(255,107,157,.3);transition:var(--tr)}
 .btn-cart-nav:disabled{opacity:.25;cursor:default;background:var(--border);box-shadow:none}
 .cart-ct{background:rgba(255,255,255,.25);border-radius:50px;padding:1px 9px;font-size:.68rem}
 
@@ -216,7 +216,7 @@ body{font-family:var(--fb);background:var(--bg);color:var(--white);min-height:10
 <a href="#" class="fab-wa" id="fabWa" target="_blank"><i class="fa-brands fa-whatsapp"></i></a>
 
 <div class="nav">
-  <button class="btn-home-nav" onclick="location.href='index.html'"><i class="fa-solid fa-house"></i></button>
+  <a href="index.html" class="btn-home-nav" title="Início"><i class="fa-solid fa-house"></i></a>
   <div class="nav-links">
     <a href="catalogo.html" class="nl"><i class="fa-solid fa-store"></i><span>Catálogo</span></a>
     <a href="conta.html" class="nl"><i class="fa-solid fa-user"></i><span>Conta</span></a>

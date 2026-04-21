@@ -13,7 +13,7 @@ if('serviceWorker' in navigator){ navigator.serviceWorker.register('./sw.js').ca
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet"/>
 <style>
 :root{--bg:#0d0d1a;--bg2:#14142b;--card:#1a1a32;--border:#2a2a4a;--pink:#ff6b9d;--purple:#b14ae8;--teal:#06d6a0;--yellow:#ffd166;--coral:#ff9f43;--red:#ff4757;--white:#fff;--muted:#9898bb;--muted2:#4a4a6a;--ft:'Fredoka One',cursive;--fb:'Nunito',sans-serif;--r:14px;--tr:all .3s cubic-bezier(.4,0,.2,1);--grad:linear-gradient(135deg,#ff6b9d,#b14ae8)}
-[data-theme="light"]{--bg:#fff5f8;--bg2:#fff;--card:#fff;--border:#f0d6e8;--white:#1a0a2e;--muted:#7a5a8a;--muted2:#ccc}
+[data-theme="light"]{--bg:#fff5f8;--bg2:#fff;--card:#fff;--border:#f0d6e8;--white:#1a0a2e;--muted:#7a5a8a;--muted2:#b0a0b8;--pink:#d4437d;--purple:#7a2fb0;--teal:#048a65;--red:#d63547}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{font-family:var(--fb);background:var(--bg);color:var(--white);min-height:100vh;padding-bottom:80px;transition:background .35s,color .35s}
 .hdr{position:sticky;top:0;z-index:100;background:rgba(13,13,26,.97);backdrop-filter:blur(24px);border-bottom:1px solid var(--border);padding:10px 14px;display:flex;align-items:center;gap:10px;transition:background .35s}
@@ -83,10 +83,12 @@ body{font-family:var(--fb);background:var(--bg);color:var(--white);min-height:10
 .vazio i{font-size:2.8rem;opacity:.18;display:block;margin-bottom:10px}
 .vazio p{font-family:var(--ft);font-size:.9rem;color:var(--muted)}
 /* NAV */
-.nav{position:fixed;bottom:0;left:0;right:0;z-index:200;padding:6px 12px 10px;display:flex;gap:8px;align-items:center;background:rgba(13,13,26,.97);backdrop-filter:blur(24px);border-top:1px solid var(--border);transition:background .35s}
+.nav{position:fixed;bottom:0;left:0;right:0;z-index:200;padding:6px 10px max(env(safe-area-inset-bottom,0px),8px);display:flex;gap:8px;align-items:center;background:rgba(13,13,26,.97);backdrop-filter:blur(24px);border-top:1px solid var(--border);transition:background .35s}
 [data-theme="light"] .nav{background:rgba(255,245,248,.97)}
-.btn-home-nav{width:40px;height:40px;flex-shrink:0;background:var(--bg2);border:1px solid var(--border);border-radius:50%;font-size:.9rem;cursor:pointer;color:var(--white);display:flex;align-items:center;justify-content:center}
-.btn-cat-nav{flex:1;height:40px;border:none;background:var(--grad);border-radius:50px;font-family:var(--ft);font-size:.76rem;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;box-shadow:0 4px 14px rgba(255,107,157,.3)}
+.btn-home-nav{width:38px;height:38px;flex-shrink:0;background:var(--bg2);border:1px solid var(--border);border-radius:50%;font-size:.88rem;cursor:pointer;color:var(--white);display:flex;align-items:center;justify-content:center;transition:var(--tr);text-decoration:none}
+.btn-home-nav:hover{border-color:var(--pink);color:var(--pink)}
+.btn-cat-nav{flex:1;height:38px;border:none;background:var(--grad);border-radius:50px;font-family:var(--ft);font-size:.76rem;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;box-shadow:0 3px 12px rgba(255,107,157,.28);transition:var(--tr)}
+.btn-cat-nav:hover{filter:brightness(1.08)}
 /* SPIN */
 .spin{width:26px;height:26px;border:3px solid var(--border);border-top-color:var(--pink);border-radius:50%;animation:sp .8s linear infinite;margin:28px auto;display:block}
 @keyframes sp{to{transform:rotate(360deg)}}
@@ -106,7 +108,20 @@ body{font-family:var(--fb);background:var(--bg);color:var(--white);min-height:10
 
 <div class="ctn">
   <!-- AUTH -->
-  <div id="authBox">
+  <!-- RASTREAR ENCOMENDA (para convidados) -->
+<div id="rastrearBox" class="form-card" style="margin-bottom:12px">
+  <div style="font-family:var(--ft);font-size:.95rem;color:var(--pink);margin-bottom:10px;display:flex;align-items:center;gap:7px">
+    <i class="fa-solid fa-magnifying-glass"></i> Rastrear Encomenda
+  </div>
+  <p style="font-size:.78rem;color:var(--muted);margin-bottom:10px;line-height:1.5">Introduz a referência da tua encomenda para ver o estado (ex: ENC-1776543210).</p>
+  <div class="fg"><input class="fi" type="text" id="rastrearRef" placeholder="ENC-XXXXXXXXXXXXXXX" style="text-transform:uppercase;margin-bottom:0"/></div>
+  <button class="btn-sub" onclick="rastrearEncomenda()" style="margin-top:8px">
+    <i class="fa-solid fa-magnifying-glass"></i> Ver Estado da Encomenda
+  </button>
+  <div id="rastrearResult" style="margin-top:10px"></div>
+</div>
+
+<div id="authBox">
     <div class="tabs">
       <button class="tab on" id="tabL" onclick="mudarTab('login')">Entrar</button>
       <button class="tab" id="tabR" onclick="mudarTab('registar')">Criar Conta</button>
@@ -151,7 +166,7 @@ body{font-family:var(--fb);background:var(--bg);color:var(--white);min-height:10
 </div>
 
 <div class="nav">
-  <button class="btn-home-nav" onclick="location.href='index.html'"><i class="fa-solid fa-house"></i></button>
+  <a href="index.html" class="btn-home-nav" title="Início"><i class="fa-solid fa-house"></i></a>
   <button class="btn-cat-nav" onclick="location.href='catalogo.html'"><i class="fa-solid fa-store"></i> Ver Catálogo</button>
 </div>
 <div class="toast" id="toast"></div>

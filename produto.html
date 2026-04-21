@@ -1,46 +1,9 @@
 <!DOCTYPE html>
+<script>if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js').catch(function(){});}(function(){var t=localStorage.getItem('tema')||'dark';document.documentElement.setAttribute('data-theme',t);})();</script>
 <html lang="pt-AO" data-theme="dark">
 <head>
 <meta charset="UTF-8"/>
-<script>
-// Registar Service Worker — garante sempre ficheiros frescos do servidor
-if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('./sw.js').catch(()=>{});
-}
-// Ouvir mensagem do Service Worker — recarregar quando há nova versão
 
-// Se catalogo.js falhou (ecrã preto) — detectar e forçar reload sem cache
-window.addEventListener('load', function(){
-  if(typeof LOJA_DEFAULT==='undefined'||typeof getLoja==='undefined'){
-    // catalogo.js não carregou correctamente — limpar cache e recarregar
-    if(!sessionStorage.getItem('_cf_reloaded')){
-      sessionStorage.setItem('_cf_reloaded','1');
-      if('caches' in window){
-        caches.keys().then(function(keys){
-          return Promise.all(keys.map(function(k){return caches.delete(k);}));
-        }).then(function(){
-          location.replace(location.pathname+'?_v='+Date.now());
-        });
-      } else {
-        location.replace(location.pathname+'?_v='+Date.now());
-      }
-    } else {
-      // Segunda tentativa falhou — NÃO remover o flag (evita loop infinito)
-      // Marcar como 'failed' e mostrar erro visível ao utilizador
-      sessionStorage.setItem('_cf_reloaded','failed');
-      if(document.body&&!document.getElementById('_cf_load_err')){
-        var d=document.createElement('div');
-        d.id='_cf_load_err';
-        d.style.cssText='position:fixed;inset:0;background:#0d0d1a;color:#ff6b9d;font-family:sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;z-index:99999';
-        d.innerHTML='<div style="font-size:2rem;margin-bottom:12px">⚠️</div><div style="font-size:1rem;font-weight:700;margin-bottom:8px">Erro ao carregar o site</div><div style="font-size:.8rem;opacity:.7;margin-bottom:20px">Verifique a sua ligação à internet e tente novamente.</div><button onclick="sessionStorage.clear();location.reload(true)" style="padding:10px 24px;background:#ff6b9d;border:none;border-radius:50px;color:#fff;font-size:.85rem;cursor:pointer">🔄 Tentar novamente</button>';
-        document.body.appendChild(d);
-      }
-    }
-  } else {
-    sessionStorage.removeItem('_cf_reloaded');
-  }
-});
-</script>
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
@@ -75,7 +38,7 @@ window.addEventListener('load', function(){
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet"/>
 <style>
 :root{--bg:#0d0d1a;--bg2:#14142b;--card:#1a1a32;--border:#2a2a4a;--pink:#ff6b9d;--purple:#b14ae8;--teal:#06d6a0;--yellow:#ffd166;--coral:#ff9f43;--red:#ff4757;--white:#fff;--muted:#9898bb;--muted2:#4a4a6a;--ft:'Fredoka One',cursive;--fb:'Nunito',sans-serif;--r:14px;--tr:all .3s cubic-bezier(.4,0,.2,1);--grad:linear-gradient(135deg,#ff6b9d,#b14ae8)}
-[data-theme="light"]{--bg:#fff5f8;--bg2:#fff;--card:#fff;--border:#f0d6e8;--white:#1a0a2e;--muted:#7a5a8a;--muted2:#ccc}
+[data-theme="light"]{--bg:#fff5f8;--bg2:#fff;--card:#fff;--border:#f0d6e8;--white:#1a0a2e;--muted:#7a5a8a;--muted2:#b0a0b8;--pink:#d4437d;--purple:#7a2fb0;--teal:#048a65;--red:#d63547;--yellow:#a07800}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{font-family:var(--fb);background:var(--bg);color:var(--white);min-height:100vh;padding-bottom:66px;transition:background .35s,color .35s}
 .hdr{position:sticky;top:0;z-index:100;background:rgba(13,13,26,.97);backdrop-filter:blur(24px);border-bottom:1px solid var(--border);padding:11px 14px;display:flex;align-items:center;gap:10px;transition:background .35s}
@@ -159,7 +122,7 @@ body{font-family:var(--fb);background:var(--bg);color:var(--white);min-height:10
 @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
 .anim{animation:fadeUp .35s ease both}
 </style>
-<!-- version check removido: produto.html não usa catalogo.js -->
+
 </head>
 <body>
 <script>
@@ -174,10 +137,13 @@ window.addEventListener('error',function(e){
 },{once:false});
 </script>
 <header class="hdr">
-  <button class="btn-bk" onclick="history.back()"><i class="fa-solid fa-arrow-left"></i></button>
-  <div class="hdr-titulo" id="hdr-titulo">Produto</div>
-  <button class="btn-th" id="btn-wl" onclick="toggleWl()"><i class="fa-regular fa-heart"></i></button>
-  <button class="btn-th" onclick="toggleTheme()"><i data-theme-ico class="fa-solid fa-sun"></i></button>
+  <div class="hdr-titulo" id="hdr-titulo" style="flex:1;text-align:left;padding-left:2px">Produto</div>
+  <button class="btn-th btn-bk" onclick="history.back()" style="background:none;border:1px solid var(--border);border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;font-size:.88rem;cursor:pointer;color:var(--white);transition:all .25s" title="Voltar">
+    <i class="fa-solid fa-arrow-left"></i>
+  </button>
+  <button class="btn-th btn-wl" id="btn-wl" onclick="doWishlist()">
+    <i class="fa-regular fa-heart"></i>
+  </button>
 </header>
 <div id="hero-container">
   <!-- Preenchido pelo JS — carrossel se tiver galeria, imagem simples se não tiver -->
@@ -210,7 +176,6 @@ window.addEventListener('error',function(e){
 </div>
 <div class="toast" id="toast"></div>
 <script>
-  // produto.html — Cloudflare Worker directo (sem catalogo.js)
   const _API = 'https://impersilvatech-api.3miliosilva.workers.dev';
   let _p=null,_qty=1,_loja={},_cats=[];
 
@@ -258,7 +223,6 @@ window.addEventListener('error',function(e){
     }
     carregar();actuBadge();actuWishlist();
   });
-  // Utils standalone (sem catalogo.js)
   function getCarrinho(){try{return JSON.parse(localStorage.getItem('cf_carrinho')||'[]');}catch(e){return[];}}
   function salvarCarrinho(c){localStorage.setItem('cf_carrinho',JSON.stringify(c));}
   function getWishlist(){try{return JSON.parse(localStorage.getItem('cf_wl')||'[]');}catch(e){return[];}}
@@ -273,7 +237,6 @@ window.addEventListener('error',function(e){
   function mudarTema(){const t=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',t);localStorage.setItem('tema',t);const el=document.getElementById('tIco');if(el)el.className=t==='dark'?'fa-solid fa-sun':'fa-solid fa-moon';}
 
 
-  // Helpers de tema (sem catalogo.js)
   function apTema(){const t=localStorage.getItem('tema')||'dark';document.documentElement.setAttribute('data-theme',t);const el=document.getElementById('tIco');if(el)el.className=t==='dark'?'fa-solid fa-sun':'fa-solid fa-moon';}
   function getLoja(){return _loja;}
   function getCategorias(){return _cats;}
@@ -420,7 +383,18 @@ window.addEventListener('error',function(e){
   function actuWishlist(){
     if(!_p) return;
     const btn=document.getElementById('btn-wl');
-    if(btn) btn.innerHTML=isWishlisted(_p.id)?'<i class="fa-solid fa-heart"></i>':'<i class="fa-regular fa-heart"></i>';
+    if(btn){
+      const wishlisted=isWishlisted(String(_p.id));
+      btn.innerHTML=wishlisted?'<i class="fa-solid fa-heart"></i>':'<i class="fa-regular fa-heart"></i>';
+      btn.style.color=wishlisted?'var(--pink)':'';
+    }
+  }
+  function doWishlist(){
+    if(!_p) return;
+    const added=toggleWishlist(String(_p.id));
+    actuWishlist();
+    const msg=added?'❤️ Adicionado à wishlist':'Removido da wishlist';
+    showToast(msg);
   }
   function toggleWl(){
     if(!_p) return;

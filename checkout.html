@@ -13,7 +13,7 @@ if('serviceWorker' in navigator){ navigator.serviceWorker.register('./sw.js').ca
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet"/>
 <style>
 :root{--bg:#0d0d1a;--bg2:#14142b;--card:#1a1a32;--border:#2a2a4a;--pink:#ff6b9d;--purple:#b14ae8;--teal:#06d6a0;--yellow:#ffd166;--coral:#ff9f43;--red:#ff4757;--white:#fff;--muted:#9898bb;--muted2:#4a4a6a;--ft:'Fredoka One',cursive;--fb:'Nunito',sans-serif;--r:14px;--tr:all .3s cubic-bezier(.4,0,.2,1);--grad:linear-gradient(135deg,#ff6b9d,#b14ae8)}
-[data-theme="light"]{--bg:#fff5f8;--bg2:#fff;--card:#fff;--border:#f0d6e8;--white:#1a0a2e;--muted:#7a5a8a;--muted2:#ccc}
+[data-theme="light"]{--bg:#fff5f8;--bg2:#fff;--card:#fff;--border:#f0d6e8;--white:#1a0a2e;--muted:#7a5a8a;--muted2:#b0a0b8;--pink:#d4437d;--purple:#7a2fb0;--teal:#048a65;--red:#d63547}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{font-family:var(--fb);background:var(--bg);color:var(--white);min-height:100vh;padding-bottom:40px;transition:background .35s,color .35s}
 .hdr{position:sticky;top:0;z-index:100;background:rgba(13,13,26,.97);backdrop-filter:blur(24px);border-bottom:1px solid var(--border);padding:10px 14px;display:flex;align-items:center;gap:10px}
@@ -67,7 +67,7 @@ select.fi option{background:var(--bg2);color:var(--white)}
 .rl.total{padding-top:10px;margin-top:4px;border-top:1px solid var(--border);font-family:var(--ft);font-size:1.05rem;color:var(--white)}
 .rl.total span:last-child{color:var(--pink)}
 /* BTN */
-.btn-final{width:100%;padding:15px;background:var(--grad);border:none;border-radius:50px;font-family:var(--ft);font-size:.92rem;color:#fff;cursor:pointer;box-shadow:0 4px 14px rgba(255,107,157,.3);margin-top:6px;display:flex;align-items:center;justify-content:center;gap:8px;transition:var(--tr)}
+.btn-final{width:100%;padding:13px;background:var(--grad);border:none;border-radius:50px;font-family:var(--ft);font-size:.92rem;color:#fff;cursor:pointer;box-shadow:0 4px 14px rgba(255,107,157,.3);margin-top:6px;display:flex;align-items:center;justify-content:center;gap:8px;transition:var(--tr)}
 .btn-final:hover{filter:brightness(1.08);transform:translateY(-1px)}
 .btn-final:disabled{opacity:.4;cursor:not-allowed;transform:none}
 .msg-err{color:var(--red);font-size:.78rem;text-align:center;margin-top:10px}
@@ -79,8 +79,7 @@ select.fi option{background:var(--bg2);color:var(--white)}
 </head>
 <body>
 <header class="hdr">
-  <button class="btn-bk" onclick="history.back()"><i class="fa-solid fa-arrow-left"></i></button>
-  <div class="hdr-nome">Finalizar Pedido</div>
+  <div class="hdr-nome" style="flex:1;text-align:left">Finalizar Pedido</div>
 </header>
 
 <div class="ctn">

@@ -125,6 +125,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // Limpar dados temporários (não o token/cliente)
+  // Guardar referência para rastreio de convidados (persiste mais tempo)
+  const refParaRastreio = localStorage.getItem('ist_ref');
+  if (refParaRastreio) localStorage.setItem('ist_last_ref', refParaRastreio);
+  // Limpar dados temporários
   ['ist_ref','ist_total','ist_nome','ist_wa'].forEach(k => localStorage.removeItem(k));
 
   // Confetti!
