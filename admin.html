@@ -215,7 +215,22 @@ input:checked+.sw-s{background:var(--grad)}input:checked+.sw-s::before{transform
             <div class="sc"><div class="sc-i pi"><i class="fa-solid fa-inbox"></i></div><div class="sc-n" id="stE">—</div><div class="sc-l">Encomendas</div></div>
             <div class="sc"><div class="sc-i pu"><i class="fa-solid fa-box"></i></div><div class="sc-n" id="stP">—</div><div class="sc-l">Produtos</div></div>
             <div class="sc"><div class="sc-i te"><i class="fa-solid fa-users"></i></div><div class="sc-n" id="stC">—</div><div class="sc-l">Clientes</div></div>
-            <div class="sc"><div class="sc-i bl"><i class="fa-solid fa-coins"></i></div><div class="sc-n" id="stR">—</div><div class="sc-l">Receita</div></div>
+            <div class="sc" style="cursor:pointer" onclick="go('encs')"><div class="sc-i bl"><i class="fa-solid fa-coins"></i></div><div class="sc-n" id="stR">—</div><div class="sc-l">Receita Total (pago)</div></div>
+          </div>
+          <!-- Receita Dia / Mês -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:13px">
+            <div class="sc" style="border-left:3px solid var(--teal)">
+              <div style="font-size:.58rem;text-transform:uppercase;color:var(--teal);letter-spacing:.4px;margin-bottom:6px;font-weight:700"><i class="fa-solid fa-calendar-day"></i> HOJE</div>
+              <div class="sc-n" id="stRDia" style="font-size:1.1rem">—</div>
+              <div class="sc-l">Receita do Dia</div>
+              <div style="font-size:.6rem;color:var(--muted);margin-top:3px" id="stEncDia">0 enc.</div>
+            </div>
+            <div class="sc" style="border-left:3px solid var(--purple)">
+              <div style="font-size:.58rem;text-transform:uppercase;color:var(--purple);letter-spacing:.4px;margin-bottom:6px;font-weight:700"><i class="fa-solid fa-calendar"></i> MÊS</div>
+              <div class="sc-n" id="stRMes" style="font-size:1.1rem">—</div>
+              <div class="sc-l">Receita do Mês</div>
+              <div style="font-size:.6rem;color:var(--muted);margin-top:3px" id="stEncMes">0 enc.</div>
+            </div>
           </div>
           <div class="ac"><div class="ach"><div class="act"><i class="fa-solid fa-clock-rotate-left"></i> Últimas Encomendas</div><button class="btn btn-o btn-sm" onclick="go('encs')">Ver todas</button></div><div id="dE"><div class="spin"></div></div></div>
           <div class="ac"><div class="ach"><div class="act"><i class="fa-solid fa-fire"></i> Produtos em Destaque</div><button class="btn btn-o btn-sm" onclick="go('prods')">Gerir</button></div><div id="dP"><div class="spin"></div></div></div>
@@ -476,12 +491,32 @@ async function carStats(){
     document.getElementById('stE').textContent=s.encomendas??'—';
     document.getElementById('stP').textContent=s.produtos??'—';
     document.getElementById('stC').textContent=s.clientes??'—';
-    // Receita = apenas encomendas pagas ou entregues
-    const receitaPaga = _encs
-      .filter(e => e.pagamento_estado === 'pago' || e.estado === 'entregue')
-      .reduce((sum, e) => sum + (e.total || 0), 0);
-    document.getElementById('stR').textContent = receitaPaga > 0 ? kz(receitaPaga) : (s.receita != null ? kz(s.receita) : '—');
-  }catch(e){}
+
+    // Receita total = apenas pagas ou entregues
+    const pagas = _encs.filter(e=>e.pagamento_estado==='pago'||e.estado==='entregue');
+    const recTotal = pagas.reduce((sum,e)=>sum+(e.total||0),0);
+    document.getElementById('stR').textContent = kz(recTotal) || '—';
+
+    // Receita do dia (hoje)
+    const hoje = new Date(); hoje.setHours(0,0,0,0);
+    const amanha = new Date(hoje); amanha.setDate(amanha.getDate()+1);
+    const encHoje = pagas.filter(e=>{
+      const d=new Date(e.criado_em); return d>=hoje && d<amanha;
+    });
+    const recHoje = encHoje.reduce((sum,e)=>sum+(e.total||0),0);
+    document.getElementById('stRDia').textContent = kz(recHoje)||'Kz 0';
+    document.getElementById('stEncDia').textContent = `${encHoje.length} enc. pagas`;
+
+    // Receita do mês
+    const inicioMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+    const fimMes = new Date(hoje.getFullYear(), hoje.getMonth()+1, 0, 23, 59, 59);
+    const encMes = pagas.filter(e=>{
+      const d=new Date(e.criado_em); return d>=inicioMes && d<=fimMes;
+    });
+    const recMes = encMes.reduce((sum,e)=>sum+(e.total||0),0);
+    document.getElementById('stRMes').textContent = kz(recMes)||'Kz 0';
+    document.getElementById('stEncMes').textContent = `${encMes.length} enc. pagas`;
+  }catch(e){console.warn('stats err',e);}
 }
 async function carClis(){
   const b=document.getElementById('cliBody');
@@ -510,22 +545,66 @@ function renderEncs(){
   const body=document.getElementById('eBody');
   document.getElementById('eInfo').textContent=`${_eF.length} encomenda${_eF.length!==1?'s':''}`;
   if(!_eF.length){body.innerHTML='<tr><td colspan="6" style="text-align:center;padding:36px;color:var(--muted)">Sem encomendas</td></tr>';return;}
-  body.innerHTML=_eF.map(e=>{
-    const wa=(e.whatsapp_cliente||e.telefone_cliente||'').replace(/\D/g,'');
-    return `<tr id="eR-${e.ref}">
-      <td><div class="tdn">${e.ref}</div><div class="tds">${fd(e.criado_em)}</div></td>
-      <td><div style="font-size:.8rem;font-weight:600">${e.nome_cliente}</div><div class="tds">${e.email_cliente}</div>${wa?`<a href="https://wa.me/${wa}" target="_blank" style="font-size:.62rem;color:var(--teal);display:flex;align-items:center;gap:2px;text-decoration:none;margin-top:1px"><i class="fa-brands fa-whatsapp"></i> WA</a>`:''}</td>
-      <td><strong>${kz(e.total)}</strong></td>
-      <td style="font-size:.7rem;color:var(--muted)">${e.tipo_entrega==='entrega'?'🚚':'🏪'}</td>
-      <td><select class="esel" onchange="aEst('${e.ref}',this.value)">${['pendente','confirmada','pronta','entregue','cancelada'].map(s=>`<option value="${s}"${e.estado===s?' selected':''}>${te(s)}</option>`).join('')}</select></td>
-      <td style="display:flex;gap:3px;flex-wrap:wrap">
-        <button class="btn btn-o btn-sm btn-ico" onclick="togD('${e.ref}')"><i class="fa-solid fa-eye"></i></button>
-        ${wa?`<a href="https://wa.me/${wa}?text=${encodeURIComponent('Olá '+e.nome_cliente+'! Sobre a encomenda '+e.ref+'...')}" target="_blank" class="btn btn-t btn-sm btn-ico"><i class="fa-brands fa-whatsapp"></i></a>`:''}
-      </td>
-    </tr>
-    <tr class="dtr" id="dt-${e.ref}"><td colspan="6" style="padding:10px 11px"><div id="dti-${e.ref}"><div class="spin" style="width:18px;height:18px;margin:7px auto"></div></div></td></tr>`;
-  }).join('');
+
+  // Agrupar por dia
+  const grupos={};
+  _eF.forEach(e=>{
+    const dia=new Date(e.criado_em).toLocaleDateString('pt',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
+    if(!grupos[dia])grupos[dia]=[];
+    grupos[dia].push(e);
+  });
+
+  const hoje=new Date().toLocaleDateString('pt',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
+
+  let html='';
+  Object.keys(grupos).forEach(dia=>{
+    const lista=grupos[dia];
+    const totalDia=lista.reduce((s,e)=>s+(e.total||0),0);
+    const pagosDia=lista.filter(e=>e.pagamento_estado==='pago'||e.estado==='entregue').reduce((s,e)=>s+(e.total||0),0);
+    const isHoje=dia===hoje;
+    html+=`<tr><td colspan="6" style="background:${isHoje?'rgba(255,107,157,.07)':'var(--bg3)'};padding:7px 11px;border-bottom:1px solid var(--border)">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px">
+        <span style="font-family:var(--ft);font-size:.76rem;color:${isHoje?'var(--pink)':'var(--muted)'};display:flex;align-items:center;gap:6px">
+          <i class="fa-solid fa-calendar-day"></i>
+          ${isHoje?'📅 Hoje — ':''}${dia.charAt(0).toUpperCase()+dia.slice(1)}
+        </span>
+        <span style="font-size:.68rem;color:var(--muted)">${lista.length} enc. · Total: <strong style="color:var(--white)">${kz(totalDia)}</strong> · Pago: <strong style="color:var(--teal)">${kz(pagosDia)}</strong></span>
+      </div>
+    </td></tr>`;
+    lista.forEach(e=>{
+      const wa=(e.whatsapp_cliente||e.telefone_cliente||'').replace(/\D/g,'');
+      const temComp=e.comprovativo_url||localStorage.getItem('comp_'+e.ref);
+      html+=`<tr id="eR-${e.ref}">
+        <td><div class="tdn">${e.ref}</div><div class="tds">${fd(e.criado_em)}</div></td>
+        <td><div style="font-size:.8rem;font-weight:600">${e.nome_cliente}</div><div class="tds">${e.email_cliente}</div>${wa?`<a href="https://wa.me/${wa}" target="_blank" style="font-size:.62rem;color:var(--teal);display:flex;align-items:center;gap:2px;text-decoration:none;margin-top:1px"><i class="fa-brands fa-whatsapp"></i> WA</a>`:''}</td>
+        <td><strong>${kz(e.total)}</strong></td>
+        <td style="font-size:.7rem;color:var(--muted)">${e.tipo_entrega==='entrega'?'🚚':'🏪'}</td>
+        <td><select class="esel" onchange="aEst('${e.ref}',this.value)">${['pendente','confirmada','pronta','entregue','cancelada'].map(s=>`<option value="${s}"${e.estado===s?' selected':''}>${te(s)}</option>`).join('')}</select></td>
+        <td><div style="display:flex;gap:3px;flex-wrap:wrap">
+          <button class="btn btn-o btn-sm btn-ico" onclick="togD('${e.ref}')"><i class="fa-solid fa-eye"></i></button>
+          ${wa?`<a href="https://wa.me/${wa}?text=${encodeURIComponent('Olá '+e.nome_cliente+'! Sobre a encomenda '+e.ref+'...')}" target="_blank" class="btn btn-t btn-sm btn-ico"><i class="fa-brands fa-whatsapp"></i></a>`:''}
+          ${temComp?`<button class="btn btn-sm" style="background:rgba(255,209,102,.1);color:var(--yellow);border:1px solid rgba(255,209,102,.3)" onclick="verComp('${e.ref}')" title="Ver comprovativo"><i class="fa-solid fa-receipt"></i></button>`:''}
+        </div></td>
+      </tr>
+      <tr class="dtr" id="dt-${e.ref}"><td colspan="6" style="padding:10px 11px"><div id="dti-${e.ref}"><div class="spin" style="width:18px;height:18px;margin:7px auto"></div></div></td></tr>`;
+    });
+  });
+  body.innerHTML=html;
 }
+
+function verComp(ref){
+  const url=localStorage.getItem('comp_'+ref);
+  if(!url){toast('Comprovativo não disponível localmente','info');return;}
+  const w=window.open('','_blank');
+  if(url.startsWith('data:')){
+    w.document.write(`<img src="${url}" style="max-width:100%;display:block;margin:auto">`);
+  } else {
+    w.location.href=url;
+  }
+}
+
+// OLD renderEncs kept as reference but replaced above
+// renderEncs is now above
 
 async function togD(ref){
   const row=document.getElementById(`dt-${ref}`),inner=document.getElementById(`dti-${ref}`);
@@ -918,9 +997,9 @@ function salvarGhTk(){
 async function marcarPago(ref, pagar){
   try{
     await fetch(`${API}/api/admin/encomendas/${ref}/estado`,{method:'PUT',headers:H(),
-      body:JSON.stringify({pagamento_estado:pagar?'pago':'pendente'})});
+      body:JSON.stringify({pagamento_estado:(pagar==1||pagar===true)?'pago':'pendente'})});
     const i=_encs.findIndex(e=>e.ref===ref);
-    if(i>=0)_encs[i].pagamento_estado=pagar?'pago':'pendente';
+    if(i>=0)_encs[i].pagamento_estado=(pagar==1||pagar===true)?'pago':'pendente';
     toast(pagar?'✓ Marcado como pago!':'Pagamento desmarcado','ok');
     // Reset detail so it reloads
     const inner=document.getElementById('dti-'+ref);

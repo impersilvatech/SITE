@@ -89,7 +89,33 @@ h1{font-family:var(--ft);font-size:1.8rem;text-align:center;margin-bottom:6px}
     <i class="fa-brands fa-whatsapp" style="font-size:1.4rem"></i>
     Falar com a loja pelo WhatsApp
   </a>
-  <a href="catalogo.html" class="btn-cat">Continuar a comprar</a>
+  <!-- COMPROVATIVO DE PAGAMENTO -->
+<div style="width:100%;margin-top:14px;background:var(--card);border:1px solid var(--border);border-radius:18px;padding:16px;text-align:left">
+  <div style="font-family:var(--ft);font-size:.95rem;color:var(--pink);margin-bottom:8px;display:flex;align-items:center;gap:7px">
+    <i class="fa-solid fa-receipt"></i> Enviar Comprovativo de Pagamento
+  </div>
+  <p style="font-size:.78rem;color:var(--muted);margin-bottom:12px;line-height:1.5">
+    Após efectuar o pagamento (Multicaixa Express ou transferência), envia o comprovativo aqui para confirmarmos rapidamente.
+  </p>
+  <div id="uploadArea" style="border:2px dashed var(--border);border-radius:12px;padding:20px;text-align:center;cursor:pointer;transition:all .25s;margin-bottom:10px" onclick="document.getElementById('compFile').click()">
+    <input type="file" id="compFile" accept="image/*" style="display:none" onchange="handleComprovativo(this)"/>
+    <i class="fa-solid fa-cloud-arrow-up" style="font-size:2rem;color:var(--muted2);display:block;margin-bottom:8px"></i>
+    <p style="font-size:.78rem;color:var(--muted)">Clique para seleccionar imagem</p>
+    <small style="font-size:.66rem;color:var(--muted2)">JPG, PNG — máx 3MB</small>
+    <div id="uploadSt" style="display:none;margin-top:8px;font-size:.74rem;padding:5px 12px;border-radius:50px"></div>
+  </div>
+  <div id="uploadPreview" style="display:none;margin-bottom:10px">
+    <img id="prevImg" src="" alt="" style="width:100%;max-height:180px;object-fit:cover;border-radius:10px"/>
+  </div>
+  <button id="btnEnviarComp" onclick="enviarComprovativo()" style="display:none;width:100%;padding:11px;background:var(--grad);border:none;border-radius:50px;font-family:var(--ft);font-size:.82rem;color:#fff;cursor:pointer;box-shadow:0 3px 10px rgba(255,107,157,.3)">
+    <i class="fa-solid fa-paper-plane"></i> Enviar Comprovativo
+  </button>
+  <div id="compEnviado" style="display:none;padding:12px;background:rgba(6,214,160,.08);border:1px solid rgba(6,214,160,.25);border-radius:12px;font-size:.8rem;color:var(--teal);text-align:center">
+    ✓ Comprovativo enviado! Aguarda confirmação da loja.
+  </div>
+</div>
+
+<a href="catalogo.html" class="btn-cat" style="margin-top:10px">Continuar a comprar</a>
 </div>
 
 <script src="catalogo.js?v=7"></script>
@@ -155,6 +181,88 @@ function copiarRef() {
     btn.style.color = 'var(--teal)';
     setTimeout(() => { btn.innerHTML = '<i class="fa-regular fa-copy"></i> Copiar referência'; btn.style.color = ''; }, 2000);
   });
+}
+
+// ── COMPROVATIVO ──────────────────────────
+let _compBase64 = null, _compRef = null;
+
+async function init_comp() {
+  _compRef = localStorage.getItem('ist_last_ref');
+}
+init_comp();
+
+function handleComprovativo(input) {
+  const file = input.files[0]; if (!file) return;
+  if (file.size > 3 * 1024 * 1024) { setCompSt('Ficheiro demasiado grande (máx 3MB)', 'err'); return; }
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    _compBase64 = e.target.result;
+    document.getElementById('prevImg').src = _compBase64;
+    document.getElementById('uploadPreview').style.display = 'block';
+    document.getElementById('btnEnviarComp').style.display = 'block';
+    document.getElementById('uploadArea').style.borderColor = 'rgba(255,107,157,.5)';
+    setCompSt('✓ Imagem pronta para enviar', 'ok');
+  };
+  reader.readAsDataURL(file);
+  input.value = '';
+}
+
+async function enviarComprovativo() {
+  if (!_compBase64 || !_compRef) { setCompSt('Referência ou ficheiro em falta', 'err'); return; }
+  const btn = document.getElementById('btnEnviarComp');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> A enviar...';
+  setCompSt('A enviar...', 'load');
+
+  try {
+    // Try GitHub upload
+    const ghToken = localStorage.getItem('adm_gh');
+    const ghUser = localStorage.getItem('adm_gh_user');
+    const ghRepo = localStorage.getItem('adm_gh_repo');
+    const ghBranch = localStorage.getItem('adm_gh_branch') || 'main';
+    let compUrl = null;
+
+    if (ghToken && ghUser && ghRepo) {
+      const fname = `comprovativos/${_compRef}-${Date.now()}.jpg`;
+      const r = await fetch(`https://api.github.com/repos/${ghUser}/${ghRepo}/contents/${fname}`, {
+        method: 'PUT',
+        headers: { 'Authorization': `token ${ghToken}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: `Comprovativo ${_compRef}`, content: _compBase64.split(',')[1], branch: ghBranch })
+      });
+      const d = await r.json();
+      if (d.content?.download_url) compUrl = d.content.download_url;
+    }
+
+    // Save to Worker API (update encomenda with comprovativo URL)
+    const API = 'https://impersilvatech-api.3miliosilva.workers.dev';
+    const payload = { comprovativo_url: compUrl || _compBase64.substring(0, 200) + '...', pagamento_estado: 'aguarda_confirmacao' };
+    await fetch(`${API}/api/encomendas/${_compRef}/comprovativo`, {
+      method: 'PUT', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    }).catch(() => {});
+
+    // Also store locally for display
+    localStorage.setItem(`comp_${_compRef}`, compUrl || _compBase64);
+    localStorage.setItem(`comp_${_compRef}_ts`, Date.now().toString());
+
+    document.getElementById('btnEnviarComp').style.display = 'none';
+    document.getElementById('compEnviado').style.display = 'block';
+    setCompSt('✓ Enviado com sucesso!', 'ok');
+  } catch(e) {
+    setCompSt('Erro ao enviar. Tenta de novo.', 'err');
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Enviar Comprovativo';
+  }
+}
+
+function setCompSt(msg, tipo) {
+  const el = document.getElementById('uploadSt');
+  const colors = { ok: 'rgba(6,214,160,.1)', err: 'rgba(255,71,87,.1)', load: 'rgba(255,107,157,.1)' };
+  const textColors = { ok: 'var(--teal)', err: 'var(--red)', load: 'var(--pink)' };
+  el.style.display = 'inline-block';
+  el.style.background = colors[tipo] || colors.load;
+  el.style.color = textColors[tipo] || textColors.load;
+  el.textContent = msg;
 }
 </script>
 </body>
