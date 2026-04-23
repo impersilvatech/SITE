@@ -548,68 +548,129 @@ let cat_ = '', q_ = '', wl_ = false, view_ = 'grid';
 let pAct = null, vAct = null, qty = 1;
 
 // ── INIT ─────────────────────────────────────────
+// ── Helpers de cache ─────────────────────────────
+function _carregarCache() {
+  // Ler produtos do cache do catalogo.js (guardado pelo index.html)
+  try {
+    const cp = localStorage.getItem('ist_prods');
+    if (cp) {
+      const pp = JSON.parse(cp);
+      if (pp && pp.d && pp.d.length > 0) {
+        // Cache usa formato catalogo.js — converter para formato raw do Worker
+        prods = pp.d.map(p => ({
+          id: p.id, nome: p.nome, descricao: p.descricao||'',
+          categoria_id: p.categoria||p.categoria_id,
+          preco_base: p.preco||p.preco_base||0,
+          preco_original: p.preco_orig||p.preco_original||0,
+          imagem_url: p.imagem||p.imagem_url||'',
+          disponivel: (p.disponivel===false||p.disponivel===0) ? 0 : 1,
+          destaque: p.etiqueta==='destaque' ? 1 : (p.destaque||0),
+          features: p.destaques ? JSON.stringify(p.destaques) : null,
+          criado_em: p.criado_em||null
+        }));
+        console.log('[Catálogo] Cache:', prods.length, 'produtos');
+      }
+    }
+    const cc = localStorage.getItem('ist_cats');
+    if (cc) {
+      const pc = JSON.parse(cc);
+      if (pc && pc.d && pc.d.length > 0) {
+        cats = pc.d.map(c => ({
+          id: c.id, slug: c.slug||'',
+          nome: c.label||c.nome||'', icone: c.emoji||c.icone||'🏷️'
+        }));
+      }
+    }
+    const cl = localStorage.getItem('ist_loja');
+    if (cl && !loja.nome) {
+      const pl = JSON.parse(cl);
+      if (pl && pl.d) loja = pl.d;
+    }
+  } catch(e) { console.warn('Cache read err:', e); }
+}
+
+function mapProdCache(p) {
+  // Converte formato raw Worker → formato catalogo.js cache
+  let feats = []; try { if(p.features) feats = JSON.parse(p.features); } catch(e) {}
+  const pct = p.preco_original && p.preco_original > p.preco_base
+    ? Math.round((1-p.preco_base/p.preco_original)*100) : 0;
+  const isNew = p.criado_em && (Date.now()-new Date(p.criado_em).getTime()) < 7*24*60*60*1000;
+  return {
+    id: p.id, nome: p.nome, descricao: p.descricao||'',
+    categoria: p.categoria_id, preco: p.preco_base||0,
+    preco_orig: p.preco_original||0, imagem: p.imagem_url||'',
+    disponivel: p.disponivel!==0, destaques: feats,
+    etiqueta: pct>0?'promo':p.destaque?'destaque':isNew?'novo':''
+  };
+}
+
 async function init() {
   apTema();
   updB();
+  const errEl = document.getElementById('apiErr');
+
+  // PASSO 1: Cache imediato (sem rede) — mostra produtos instantaneamente
+  _carregarCache();
+
+  // PASSO 2: Fetch frescos em paralelo
   try {
     const [lR, cR, pR] = await Promise.all([
-      fetch(`${API}/api/loja`).then(r => r.json()).catch(() => ({})),
-      fetch(`${API}/api/categorias`,{signal:AbortSignal.timeout?AbortSignal.timeout(8000):undefined}).then(r=>r.ok?r.json():[]).catch(()=>[]),
-      fetch(`${API}/api/produtos`,{signal:AbortSignal.timeout?AbortSignal.timeout(8000):undefined}).then(r=>r.ok?r.json():[]).catch(()=>[])
+      fetch(`${API}/api/loja`).then(r=>r.json()).catch(()=>null),
+      fetch(`${API}/api/categorias`).then(r=>r.json()).catch(()=>null),
+      fetch(`${API}/api/produtos`).then(r=>r.json()).catch(()=>null)
     ]);
-    loja = (lR && !lR.erro) ? lR : {};
-    cats = Array.isArray(cR) ? cR : [];
-    prods = Array.isArray(pR) ? pR : [];
-    console.log('[Catálogo] Loja:', loja.nome, '| Cats:', cats.length, '| Prods:', prods.length);
+
+    if (lR && !lR.erro) loja = lR;
+    if (Array.isArray(cR) && cR.length > 0) {
+      cats = cR;
+      try { localStorage.setItem('ist_cats', JSON.stringify({d:cR.map(c=>({id:c.id,slug:c.slug,label:c.nome,nome:c.nome,emoji:c.icone||'🏷️'})),ts:Date.now()})); } catch(e){}
+    }
+    if (Array.isArray(pR) && pR.length > 0) {
+      prods = pR;
+      try { localStorage.setItem('ist_prods', JSON.stringify({d:pR.map(mapProdCache),ts:Date.now()})); } catch(e){}
+    }
+    if(errEl) errEl.style.display = 'none';
+    console.log('[Catálogo] Network:', loja.nome, '| C:', cats.length, '| P:', prods.length);
   } catch(e) {
-    console.warn('Erro ao carregar:', e);
-    loja = {}; cats = []; prods = [];
-    const errEl = document.getElementById('apiErr');
-    if(errEl) errEl.style.display = 'block';
+    console.warn('Fetch err:', e);
+    if (prods.length === 0 && errEl) errEl.style.display = 'block';
   }
 
-  // Verificar se loja está activa
+  // PASSO 3: Verificar loja activa
   if (loja.ativa === 0) {
     const el = document.getElementById('lojaFechada');
     el.classList.add('on');
     if (loja.mensagem_fecho) document.getElementById('lfMsg').textContent = loja.mensagem_fecho;
     if (loja.nome) document.getElementById('lfTitulo').textContent = loja.nome + ' — Fechada';
-    if (loja.whatsapp) {
-      const n = loja.whatsapp.replace(/\D/g,'');
-      document.getElementById('lfWa').href = `https://wa.me/${n}?text=Olá! Quando voltam a abrir?`;
-    } else {
-      document.getElementById('lfWa').style.display = 'none';
-    }
-    return; // Não renderizar o catálogo
+    const waNum = (loja.whatsapp||'').replace(/\D/g,'');
+    if (waNum) document.getElementById('lfWa').href = `https://wa.me/${waNum}?text=Olá!`;
+    else document.getElementById('lfWa').style.display = 'none';
+    return;
   }
 
-  // Aplicar dados da loja
+  // PASSO 4: Aplicar loja e renderizar
+  if (loja.cor_primaria) document.documentElement.style.setProperty('--pink', loja.cor_primaria);
+  if (loja.cor_secundaria) document.documentElement.style.setProperty('--purple', loja.cor_secundaria);
   if (loja.nome) {
     document.getElementById('hdrTitle').textContent = loja.nome;
     document.title = 'Catálogo — ' + loja.nome;
   }
-  if (loja.cor_primaria) {
-    document.documentElement.style.setProperty('--pink', loja.cor_primaria);
+  if (loja.whatsapp) {
+    const n = (loja.whatsapp||'').replace(/\D/g,'');
+    // WhatsApp disponível via drawer
+    window._waNum = n;
   }
-  if (loja.cor_secundaria) {
-    document.documentElement.style.setProperty('--purple', loja.cor_secundaria);
-  }
-  // WhatsApp handled in drawer
 
   buildCats();
 
-  // Categoria inicial (vinda da homepage)
   const ini = sessionStorage.getItem('cf_cat_ini');
-  if (ini) {
-    cat_ = ini;
-    sessionStorage.removeItem('cf_cat_ini');
-  }
-  // Categoria via URL
+  if (ini) { cat_ = ini; sessionStorage.removeItem('cf_cat_ini'); }
   const catUrl = new URLSearchParams(location.search).get('cat');
   if (catUrl) cat_ = catUrl;
 
   highlightCat();
   render();
+  updB();
   initPTR();
 }
 
@@ -947,10 +1008,10 @@ function abrirDrawer() {
   if (loja.nome) document.getElementById('drawerLogo').textContent = loja.nome;
   // WhatsApp
   const waEl = document.getElementById('drawerWa');
-  if (waEl && loja.whatsapp) {
-    const n = loja.whatsapp.replace(/\D/g,'');
+  const waNum = window._waNum || (loja.whatsapp||'').replace(/\D/g,'');
+  if (waEl && waNum) {
     waEl.style.display = '';
-    waEl.onclick = () => { fecharDrawer(); window.open(`https://wa.me/${n}?text=Olá!`, '_blank'); };
+    waEl.onclick = () => { fecharDrawer(); window.open(`https://wa.me/${waNum}?text=Olá!`, '_blank'); };
   }
   if (cli) {
     authEl.innerHTML = `<div class="drawer-cli">
