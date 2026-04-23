@@ -420,6 +420,9 @@ body{font-family:var(--fb);background:var(--bg);color:var(--white);
 
 <!-- PULL TO REFRESH -->
 <div class="ptr" id="ptr"><div class="ptr-spin"></div></div>
+<div id="apiErr" style="display:none;margin:12px;padding:10px 14px;background:rgba(255,71,87,.08);border:1px solid rgba(255,71,87,.2);border-radius:10px;font-size:.78rem;color:var(--red)">
+  <i class="fa-solid fa-triangle-exclamation"></i> Erro ao ligar ao servidor. <button onclick="location.reload()" style="background:none;border:none;color:var(--pink);cursor:pointer;font-size:.78rem;text-decoration:underline">Tentar novamente</button>
+</div>
 
 <div class="toolbar">
   <span class="tl-info" id="tlInfo">A carregar...</span>
@@ -551,15 +554,18 @@ async function init() {
   try {
     const [lR, cR, pR] = await Promise.all([
       fetch(`${API}/api/loja`).then(r => r.json()).catch(() => ({})),
-      fetch(`${API}/api/categorias`).then(r => r.json()).catch(() => []),
-      fetch(`${API}/api/produtos`).then(r => r.json()).catch(() => [])
+      fetch(`${API}/api/categorias`,{signal:AbortSignal.timeout?AbortSignal.timeout(8000):undefined}).then(r=>r.ok?r.json():[]).catch(()=>[]),
+      fetch(`${API}/api/produtos`,{signal:AbortSignal.timeout?AbortSignal.timeout(8000):undefined}).then(r=>r.ok?r.json():[]).catch(()=>[])
     ]);
     loja = (lR && !lR.erro) ? lR : {};
     cats = Array.isArray(cR) ? cR : [];
     prods = Array.isArray(pR) ? pR : [];
+    console.log('[Catálogo] Loja:', loja.nome, '| Cats:', cats.length, '| Prods:', prods.length);
   } catch(e) {
     console.warn('Erro ao carregar:', e);
     loja = {}; cats = []; prods = [];
+    const errEl = document.getElementById('apiErr');
+    if(errEl) errEl.style.display = 'block';
   }
 
   // Verificar se loja está activa
@@ -697,7 +703,8 @@ function render() {
     eb.style.display = 'block';
     document.getElementById('emptyMsg').textContent =
       q_ ? `Sem resultados para "${q_}"` :
-      cat_ ? 'Sem produtos nesta categoria' : 'Sem produtos disponíveis.';
+      cat_ ? 'Sem produtos nesta categoria' : 
+      prods.length === 0 ? 'Sem produtos cadastrados. Adiciona produtos no painel admin.' : 'Sem produtos disponíveis.';
     document.getElementById('tlInfo').innerHTML = '<strong>0</strong> produtos';
     return;
   }

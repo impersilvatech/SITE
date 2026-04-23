@@ -61,7 +61,7 @@ textarea.fi{resize:none;line-height:1.5}
 .pt{font-family:var(--ft);font-size:1.2rem;color:var(--white);margin-bottom:13px;display:flex;align-items:center;gap:8px}.pt i{color:var(--pink)}
 /* MOB NAV */
 .mob-nav{display:none;position:fixed;bottom:0;left:0;right:0;z-index:100;background:var(--bg2);border-top:1px solid var(--border);padding:5px 0 9px;justify-content:space-around}
-@media(max-width:600px){.sb{display:none}.mob-nav{display:flex}html,body,#app,.ab,.mn{overflow:auto;height:auto}body{padding-bottom:58px}}
+@media(max-width:600px){.sb{display:none!important}.mob-nav{display:flex}html,body,#app,.ab,.mn{overflow:auto;height:auto}body{padding-bottom:58px}}
 .mnb{display:flex;flex-direction:column;align-items:center;gap:1px;background:none;border:none;cursor:pointer;color:var(--muted);font-size:.48rem;text-transform:uppercase;padding:0 7px;transition:var(--tr);position:relative}.mnb i{font-size:1.05rem}.mnb.on{color:var(--pink)}
 .mnb-b{position:absolute;top:0;right:2px;background:var(--red);color:#fff;border-radius:50%;width:12px;height:12px;font-size:.4rem;font-weight:700;display:none;align-items:center;justify-content:center}.mnb-b.on{display:flex}
 /* STATS */
@@ -164,6 +164,13 @@ input:checked+.sw-s{background:var(--grad)}input:checked+.sw-s::before{transform
 .toast{position:fixed;top:58px;left:50%;transform:translateX(-50%) translateY(-80px);background:var(--card);border:1px solid var(--border);border-radius:13px;padding:8px 16px;font-size:.8rem;font-weight:700;max-width:calc(100vw - 30px);z-index:9999;opacity:0;pointer-events:none;transition:transform .38s cubic-bezier(.34,1.56,.64,1);box-shadow:0 8px 28px rgba(0,0,0,.5);display:flex;align-items:center;gap:6px}
 .toast.show{transform:translateX(-50%) translateY(0);opacity:1}
 .toast.ok{border-color:var(--teal);color:var(--teal)}.toast.err{border-color:var(--red);color:var(--red)}.toast.info{border-color:var(--pink);color:var(--pink)}
+
+.adm-nav-btn{width:100%;display:flex;align-items:center;gap:9px;padding:10px 12px;
+  border-radius:var(--r);color:var(--white);background:none;border:none;
+  font-family:var(--fb);font-size:.84rem;cursor:pointer;text-align:left;
+  transition:var(--tr)}
+.adm-nav-btn:hover{background:rgba(255,107,157,.08);color:var(--pink)}
+.adm-nav-btn i{width:16px;color:var(--pink);font-size:.9rem;flex-shrink:0}
 </style>
 </head>
 <body>
@@ -188,9 +195,8 @@ input:checked+.sw-s{background:var(--grad)}input:checked+.sw-s::before{transform
     <div class="tb-logo">⚙ Admin</div>
     <div class="tb-loja" id="tbL">A carregar...</div>
     <div class="tb-acts">
-      <button class="tbb" onclick="toggleSb()"><i class="fa-solid fa-bars"></i></button>
       <button class="tbb" onclick="mudarTema()" id="temaBtn" title="Tema"><i class="fa-solid fa-moon" id="tIco"></i></button>
-      <button class="tbb" onclick="abrirAdminDrawer()" title="Mais opções"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+      <button class="tbb" onclick="abrirAdminDrawer()" title="Menu"><i class="fa-solid fa-ellipsis-vertical"></i></button>
     </div>
   </div>
   <div class="ab">
@@ -211,6 +217,14 @@ input:checked+.sw-s{background:var(--grad)}input:checked+.sw-s::before{transform
         <div class="pnl" id="p-dash">
           <div class="pt"><i class="fa-solid fa-gauge"></i> Dashboard</div>
           <div class="cbar"><span class="dot"></span> Cache 30s — alterações aparecem rapidamente no site</div>
+          <div style="display:flex;gap:8px;margin-bottom:11px;flex-wrap:wrap">
+            <div style="flex:1;min-width:140px;padding:8px 12px;background:rgba(6,214,160,.05);border:1px solid rgba(6,214,160,.15);border-radius:var(--r);font-size:.7rem;color:var(--teal)">
+              <i class="fa-solid fa-database"></i> <strong>Dados guardados no D1</strong> — as encomendas, produtos e clientes ficam guardados permanentemente na base de dados Cloudflare.
+            </div>
+            <div style="flex:1;min-width:140px;padding:8px 12px;background:rgba(255,209,102,.05);border:1px solid rgba(255,209,102,.15);border-radius:var(--r);font-size:.7rem;color:var(--yellow)">
+              <i class="fa-solid fa-clock"></i> <strong>Datas de pagamento</strong> guardadas localmente neste browser. Noutro dispositivo as datas de hoje/mês podem diferir.
+            </div>
+          </div>
           <div class="sg">
             <div class="sc"><div class="sc-i pi"><i class="fa-solid fa-inbox"></i></div><div class="sc-n" id="stE">—</div><div class="sc-l">Encomendas</div></div>
             <div class="sc"><div class="sc-i pu"><i class="fa-solid fa-box"></i></div><div class="sc-n" id="stP">—</div><div class="sc-l">Produtos</div></div>
@@ -383,15 +397,24 @@ input:checked+.sw-s{background:var(--grad)}input:checked+.sw-s::before{transform
 
 <!-- Admin Drawer -->
 <div id="adOv" onclick="fecharAdminDrawer()" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.6);backdrop-filter:blur(3px)"></div>
-<div id="adDrawer" style="position:fixed;top:50px;right:0;bottom:0;width:220px;z-index:501;background:var(--card);border-left:1px solid var(--border);transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column">
-  <div style="padding:14px 16px;border-bottom:1px solid var(--border);font-family:var(--ft);font-size:.88rem;color:var(--pink)">Mais Opções</div>
-  <div style="padding:8px;flex:1;overflow-y:auto">
-    <a href="index.html" target="_blank" style="display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:var(--r);color:var(--white);text-decoration:none;font-size:.85rem;transition:var(--tr)" onmouseover="this.style.background='rgba(255,107,157,.08)'" onmouseout="this.style.background=''">
-      <i class="fa-solid fa-arrow-up-right-from-square" style="color:var(--pink);width:18px"></i> Ver Site ao Vivo
-    </a>
-    <button onclick="fecharAdminDrawer();doLogout()" style="width:100%;display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:var(--r);color:var(--red);background:none;border:none;font-family:var(--fb);font-size:.85rem;cursor:pointer;text-align:left;transition:var(--tr)" onmouseover="this.style.background='rgba(255,71,87,.08)'" onmouseout="this.style.background=''">
-      <i class="fa-solid fa-right-from-bracket" style="width:18px"></i> Terminar Sessão
-    </button>
+<div id="adDrawer" style="position:fixed;top:50px;right:0;bottom:0;width:230px;z-index:501;background:var(--card);border-left:1px solid var(--border);transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;overflow-y:auto">
+  <div style="padding:12px 14px;border-bottom:1px solid var(--border)">
+    <div style="font-family:var(--ft);font-size:.78rem;color:var(--pink);margin-bottom:2px">⚙ Admin Panel</div>
+    <div id="adLojaName" style="font-size:.72rem;color:var(--muted)">—</div>
+  </div>
+  <div style="padding:6px">
+    <div style="font-size:.56rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted2);padding:8px 10px 4px">Navegação</div>
+    <button onclick="fecharAdminDrawer();go('dash')" class="adm-nav-btn"><i class="fa-solid fa-gauge"></i> Dashboard</button>
+    <button onclick="fecharAdminDrawer();go('encs')" class="adm-nav-btn"><i class="fa-solid fa-inbox"></i> Encomendas <span id="adEncB" style="margin-left:auto;background:var(--red);color:#fff;border-radius:50px;padding:1px 7px;font-size:.56rem;display:none">0</span></button>
+    <button onclick="fecharAdminDrawer();go('prods')" class="adm-nav-btn"><i class="fa-solid fa-box"></i> Produtos</button>
+    <button onclick="fecharAdminDrawer();go('cats')" class="adm-nav-btn"><i class="fa-solid fa-tags"></i> Categorias</button>
+    <button onclick="fecharAdminDrawer();go('clis')" class="adm-nav-btn"><i class="fa-solid fa-users"></i> Clientes</button>
+    <button onclick="fecharAdminDrawer();go('loja')" class="adm-nav-btn"><i class="fa-solid fa-gear"></i> Configurações</button>
+    <div style="height:1px;background:var(--border);margin:6px 0"></div>
+    <div style="font-size:.56rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted2);padding:4px 10px">Acções</div>
+    <a href="index.html" target="_blank" class="adm-nav-btn" style="text-decoration:none"><i class="fa-solid fa-arrow-up-right-from-square"></i> Ver Site ao Vivo</a>
+    <button onclick="fecharAdminDrawer();mudarTema()" class="adm-nav-btn"><i class="fa-solid fa-circle-half-stroke"></i> Mudar Tema</button>
+    <button onclick="fecharAdminDrawer();doLogout()" class="adm-nav-btn" style="color:var(--red)"><i class="fa-solid fa-right-from-bracket"></i> Terminar Sessão</button>
   </div>
 </div>
 
@@ -410,6 +433,11 @@ let _eF=[],_pF=[],_sbOpen=false,_pg='dash',_cfgS='id';
 function abrirAdminDrawer(){
   document.getElementById('adOv').style.display='block';
   document.getElementById('adDrawer').style.transform='translateX(0)';
+  const nm=document.getElementById('adLojaName');
+  if(nm)nm.textContent=_loja?.nome||'Loja';
+  const pend=_encs.filter(e=>e.estado==='pendente').length;
+  const adB=document.getElementById('adEncB');
+  if(adB){adB.textContent=pend;adB.style.display=pend>0?'inline':'none';}
 }
 function fecharAdminDrawer(){
   document.getElementById('adOv').style.display='none';
@@ -452,6 +480,13 @@ function doLogout(){localStorage.removeItem('adm_tk');_tok='';document.getElemen
 async function iniciar(l){
   _loja=l;document.getElementById('tbL').textContent=_loja.nome||'Sem nome';
   await Promise.all([carCats(),carProds(),carEncs()]);
+  // Init payment dates for existing paid orders (first time only)
+  _encs.forEach(e=>{
+    if((e.pagamento_estado==='pago'||e.estado==='entregue') && !localStorage.getItem('pgdt_'+e.ref)){
+      // Use order creation date as fallback for old orders
+      localStorage.setItem('pgdt_'+e.ref, e.criado_em||new Date().toISOString());
+    }
+  });
   carStats();renderDash();renderLojaForm();go('dash');
 }
 function H(){return{'Content-Type':'application/json','Authorization':`Bearer ${_tok}`};}
@@ -470,7 +505,7 @@ function go(pg){
   if(pg==='cats')renderCats();
   if(pg==='clis')carClis();
 }
-function toggleSb(){_sbOpen=!_sbOpen;document.getElementById('sbEl').classList.toggle('open',_sbOpen);}
+function toggleSb(){}
 
 // ── DADOS ─────────────────────────────────────────
 async function carCats(){try{const r=await fetch(`${API}/api/categorias`);_cats=await r.json();}catch(e){_cats=[];}}
@@ -497,25 +532,30 @@ async function carStats(){
     const recTotal = pagas.reduce((sum,e)=>sum+(e.total||0),0);
     document.getElementById('stR').textContent = kz(recTotal) || '—';
 
-    // Receita do dia (hoje)
+    // Receita de hoje = pagas HOJE (pela data de pagamento, não de criação)
     const hoje = new Date(); hoje.setHours(0,0,0,0);
     const amanha = new Date(hoje); amanha.setDate(amanha.getDate()+1);
-    const encHoje = pagas.filter(e=>{
-      const d=new Date(e.criado_em); return d>=hoje && d<amanha;
-    });
-    const recHoje = encHoje.reduce((sum,e)=>sum+(e.total||0),0);
-    document.getElementById('stRDia').textContent = kz(recHoje)||'Kz 0';
-    document.getElementById('stEncDia').textContent = `${encHoje.length} enc. pagas`;
-
-    // Receita do mês
     const inicioMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
     const fimMes = new Date(hoje.getFullYear(), hoje.getMonth()+1, 0, 23, 59, 59);
-    const encMes = pagas.filter(e=>{
-      const d=new Date(e.criado_em); return d>=inicioMes && d<=fimMes;
+
+    const encHoje = [], encMes = [];
+    pagas.forEach(e=>{
+      // Data de pagamento: guardada no localStorage quando foi marcado como pago
+      const pgdtStr = localStorage.getItem('pgdt_'+e.ref);
+      const pgdt = pgdtStr ? new Date(pgdtStr) : null;
+      // Fallback: se não há data de pagamento, usar data de criação
+      const dRef = pgdt || new Date(e.criado_em);
+      if(dRef >= hoje && dRef < amanha) encHoje.push(e);
+      if(dRef >= inicioMes && dRef <= fimMes) encMes.push(e);
     });
+
+    const recHoje = encHoje.reduce((sum,e)=>sum+(e.total||0),0);
+    document.getElementById('stRDia').textContent = kz(recHoje)||'Kz 0';
+    document.getElementById('stEncDia').textContent = `${encHoje.length} enc. pagas hoje`;
+
     const recMes = encMes.reduce((sum,e)=>sum+(e.total||0),0);
     document.getElementById('stRMes').textContent = kz(recMes)||'Kz 0';
-    document.getElementById('stEncMes').textContent = `${encMes.length} enc. pagas`;
+    document.getElementById('stEncMes').textContent = `${encMes.length} enc. pagas no mês`;
   }catch(e){console.warn('stats err',e);}
 }
 async function carClis(){
@@ -579,7 +619,15 @@ function renderEncs(){
         <td><div style="font-size:.8rem;font-weight:600">${e.nome_cliente}</div><div class="tds">${e.email_cliente}</div>${wa?`<a href="https://wa.me/${wa}" target="_blank" style="font-size:.62rem;color:var(--teal);display:flex;align-items:center;gap:2px;text-decoration:none;margin-top:1px"><i class="fa-brands fa-whatsapp"></i> WA</a>`:''}</td>
         <td><strong>${kz(e.total)}</strong></td>
         <td style="font-size:.7rem;color:var(--muted)">${e.tipo_entrega==='entrega'?'🚚':'🏪'}</td>
-        <td><select class="esel" onchange="aEst('${e.ref}',this.value)">${['pendente','confirmada','pronta','entregue','cancelada'].map(s=>`<option value="${s}"${e.estado===s?' selected':''}>${te(s)}</option>`).join('')}</select></td>
+        <td>
+          <select class="esel" onchange="aEst('${e.ref}',this.value)">${['pendente','confirmada','pronta','entregue','cancelada'].map(s=>`<option value="${s}"${e.estado===s?' selected':''}>${te(s)}</option>`).join('')}</select>
+          <div style="margin-top:4px">
+            <button class="btn btn-sm" style="padding:2px 8px;font-size:.54rem;${e.pagamento_estado==='pago'?'background:rgba(6,214,160,.1);color:var(--teal);border:1px solid rgba(6,214,160,.3)':'background:rgba(255,209,102,.07);color:var(--yellow);border:1px solid rgba(255,209,102,.25)'}" onclick="marcarPago('${e.ref}',${e.pagamento_estado==='pago'?0:1})">
+              <i class="fa-solid ${e.pagamento_estado==='pago'?'fa-check-circle':'fa-circle-dot'}"></i>
+              ${e.pagamento_estado==='pago'?'Pago':'Marcar Pago'}
+            </button>
+          </div>
+        </td>
         <td><div style="display:flex;gap:3px;flex-wrap:wrap">
           <button class="btn btn-o btn-sm btn-ico" onclick="togD('${e.ref}')"><i class="fa-solid fa-eye"></i></button>
           ${wa?`<a href="https://wa.me/${wa}?text=${encodeURIComponent('Olá '+e.nome_cliente+'! Sobre a encomenda '+e.ref+'...')}" target="_blank" class="btn btn-t btn-sm btn-ico"><i class="fa-brands fa-whatsapp"></i></a>`:''}
@@ -636,8 +684,25 @@ async function togD(ref){
 }
 
 async function aEst(ref,estado){
-  try{await fetch(`${API}/api/admin/encomendas/${ref}/estado`,{method:'PUT',headers:H(),body:JSON.stringify({estado,pagamento_estado:'pendente'})});const i=_encs.findIndex(e=>e.ref===ref);if(i>=0)_encs[i].estado=estado;toast(`Estado: ${te(estado)}`,'ok');}
-  catch(e){toast('Erro ao actualizar','err');}
+  try{
+    const pgEst = estado==='entregue' ? 'pago' : undefined;
+    const body = {estado};
+    if(pgEst) body.pagamento_estado = pgEst;
+    await fetch(`${API}/api/admin/encomendas/${ref}/estado`,{method:'PUT',headers:H(),body:JSON.stringify(body)});
+    const i=_encs.findIndex(e=>e.ref===ref);
+    if(i>=0){
+      _encs[i].estado=estado;
+      if(pgEst){
+        _encs[i].pagamento_estado=pgEst;
+        // Registar data de pagamento
+        if(!localStorage.getItem('pgdt_'+ref)){
+          localStorage.setItem('pgdt_'+ref, new Date().toISOString());
+        }
+      }
+    }
+    toast(`Estado: ${te(estado)}`,'ok');
+    renderEncs(); carStats();
+  }catch(e){toast('Erro ao actualizar','err');}
 }
 function fEncs(q){const b=q.toLowerCase();_eF=_encs.filter(e=>e.ref.toLowerCase().includes(b)||e.nome_cliente.toLowerCase().includes(b)||e.email_cliente.toLowerCase().includes(b));renderEncs();}
 function fEncE(est){_eF=est?_encs.filter(e=>e.estado===est):[..._encs];renderEncs();}
@@ -1025,8 +1090,8 @@ async function alterarTok(){
 function v(id){const el=document.getElementById(id);return el?el.value.trim():'';}
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/'/g,'&#39;').replace(/"/g,'&quot;');}
 function kz(val){if(val==null)return'—';const sym=_loja.simbolo_moeda||'Kz';return`${sym} ${Number(val).toLocaleString('pt')}`;}
-function te(e){return{pendente:'⏳ Pendente',confirmada:'✓ Confirmada',pronta:'📦 Pronta',entregue:'✅ Entregue',cancelada:'✕ Cancelada'}[e]||e;}
-function bc(e){return{pendente:'bp',confirmada:'bc',pronta:'bpr',entregue:'be_',cancelada:'bca'}[e]||'bp';}
+function te(e){return{pendente:'⏳ Pendente',confirmada:'✓ Confirmada',pronta:'📦 Pronta',entregue:'✅ Entregue',cancelada:'✕ Cancelada',pago:'💰 Pago',aguarda_confirmacao:'🕐 Aguarda Conf.'}[e]||e;}
+function bc(e){return{pendente:'bp',confirmada:'bc',pronta:'bpr',entregue:'be_',cancelada:'bca',pago:'bok',aguarda_confirmacao:'bdest'}[e]||'bp';}
 function fd(d){if(!d)return'—';return new Date(d).toLocaleDateString('pt',{day:'2-digit',month:'short',year:'numeric'});}
 function aSlug(inp){if(!v('pId'))document.getElementById('pSlug').value=inp.value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');}
 function aCSlug(inp){if(!v('cId'))document.getElementById('cSlug').value=inp.value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');}
