@@ -288,7 +288,7 @@ input:checked+.sw-s{background:var(--grad)}input:checked+.sw-s::before{transform
           <div class="pt"><i class="fa-solid fa-gear"></i> Configurações da Loja</div>
           <!-- Secção activa label -->
           <div id="cfgSecLabel" style="display:flex;align-items:center;gap:8px;margin-bottom:13px;padding:8px 12px;background:var(--card2);border:1px solid var(--border);border-radius:var(--r)">
-            <span id="cfgSecIco" style="font-size:1rem">🏪</span>
+            <span id="cfgSecIco" style="font-size:.9rem;color:var(--pink);width:18px;text-align:center"><i class="fa-solid fa-store"></i></span>
             <span id="cfgSecNome" style="font-family:var(--ft);font-size:.85rem;color:var(--pink);flex:1">Identidade</span>
             <button onclick="abrirAdminDrawer('loja')" style="background:none;border:1px solid var(--border);border-radius:var(--r);padding:4px 10px;font-size:.68rem;color:var(--muted);cursor:pointer;font-family:var(--ft);transition:var(--tr)" onmouseover="this.style.borderColor='var(--pink)';this.style.color='var(--pink)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">
               Mudar secção ›
@@ -393,23 +393,17 @@ input:checked+.sw-s{background:var(--grad)}input:checked+.sw-s::before{transform
     <div id="adLojaName" style="font-size:.72rem;color:var(--muted)">—</div>
   </div>
   <div style="padding:6px">
-    <div style="font-size:.56rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted2);padding:8px 10px 4px">Navegação</div>
-    <button onclick="fecharAdminDrawer();go('dash')" class="adm-nav-btn"><i class="fa-solid fa-gauge"></i> Dashboard</button>
-    <button onclick="fecharAdminDrawer();go('encs')" class="adm-nav-btn"><i class="fa-solid fa-inbox"></i> Encomendas <span id="adEncB" style="margin-left:auto;background:var(--red);color:#fff;border-radius:50px;padding:1px 7px;font-size:.56rem;display:none">0</span></button>
-    <button onclick="fecharAdminDrawer();go('prods')" class="adm-nav-btn"><i class="fa-solid fa-box"></i> Produtos</button>
-    <button onclick="fecharAdminDrawer();go('cats')" class="adm-nav-btn"><i class="fa-solid fa-tags"></i> Categorias</button>
-    <button onclick="fecharAdminDrawer();go('clis')" class="adm-nav-btn"><i class="fa-solid fa-users"></i> Clientes</button>
-    <button onclick="fecharAdminDrawer();go('loja')" class="adm-nav-btn"><i class="fa-solid fa-gear"></i> Configurações</button>
-    <!-- Sub-secções de configuração (só visíveis quando pg=loja) -->
-    <div id="adLojaSubMenu" style="display:none;margin-left:8px;border-left:2px solid var(--border);padding-left:8px">
-      <button onclick="fecharAdminDrawer();go('loja');cfgT('id')" class="adm-nav-btn" style="font-size:.78rem;padding:7px 10px"><span style="width:18px;display:inline-block">🏪</span> Identidade</button>
-      <button onclick="fecharAdminDrawer();go('loja');cfgT('ct')" class="adm-nav-btn" style="font-size:.78rem;padding:7px 10px"><span style="width:18px;display:inline-block">📞</span> Contactos</button>
-      <button onclick="fecharAdminDrawer();go('loja');cfgT('ent')" class="adm-nav-btn" style="font-size:.78rem;padding:7px 10px"><span style="width:18px;display:inline-block">🚚</span> Entrega</button>
-      <button onclick="fecharAdminDrawer();go('loja');cfgT('hor')" class="adm-nav-btn" style="font-size:.78rem;padding:7px 10px"><span style="width:18px;display:inline-block">🕐</span> Horários</button>
-      <button onclick="fecharAdminDrawer();go('loja');cfgT('vis')" class="adm-nav-btn" style="font-size:.78rem;padding:7px 10px"><span style="width:18px;display:inline-block">🎨</span> Visual & GitHub</button>
-      <button onclick="fecharAdminDrawer();go('loja');cfgT('not')" class="adm-nav-btn" style="font-size:.78rem;padding:7px 10px"><span style="width:18px;display:inline-block">🔔</span> Notificações</button>
-      <button onclick="fecharAdminDrawer();go('loja');cfgT('seo')" class="adm-nav-btn" style="font-size:.78rem;padding:7px 10px"><span style="width:18px;display:inline-block">🔍</span> SEO & Legal</button>
-      <button onclick="fecharAdminDrawer();go('loja');cfgT('sec')" class="adm-nav-btn" style="font-size:.78rem;padding:7px 10px"><span style="width:18px;display:inline-block">🔐</span> Segurança</button>
+    <!-- CONFIGURAÇÕES DA LOJA (sub-secções) -->
+    <div style="font-size:.56rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted2);padding:8px 10px 4px">Configurações da Loja</div>
+    <div id="adLojaSubMenu">
+      <button onclick="fecharAdminDrawer();go('loja');cfgT('id')" class="adm-nav-btn"><i class="fa-solid fa-store"></i> Identidade</button>
+      <button onclick="fecharAdminDrawer();go('loja');cfgT('ct')" class="adm-nav-btn"><i class="fa-solid fa-phone"></i> Contactos</button>
+      <button onclick="fecharAdminDrawer();go('loja');cfgT('ent')" class="adm-nav-btn"><i class="fa-solid fa-truck"></i> Entrega</button>
+      <button onclick="fecharAdminDrawer();go('loja');cfgT('hor')" class="adm-nav-btn"><i class="fa-regular fa-clock"></i> Horários</button>
+      <button onclick="fecharAdminDrawer();go('loja');cfgT('vis')" class="adm-nav-btn"><i class="fa-solid fa-palette"></i> Visual & GitHub</button>
+      <button onclick="fecharAdminDrawer();go('loja');cfgT('not')" class="adm-nav-btn"><i class="fa-solid fa-bell"></i> Notificações</button>
+      <button onclick="fecharAdminDrawer();go('loja');cfgT('seo')" class="adm-nav-btn"><i class="fa-solid fa-magnifying-glass"></i> SEO & Legal</button>
+      <button onclick="fecharAdminDrawer();go('loja');cfgT('sec')" class="adm-nav-btn"><i class="fa-solid fa-shield-halved"></i> Segurança</button>
     </div>
     <div style="height:1px;background:var(--border);margin:6px 0"></div>
     <div style="font-size:.56rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted2);padding:4px 10px">Acções</div>
@@ -517,9 +511,7 @@ function go(pg){
   document.querySelectorAll('[id^="sbi-"],[id^="mnb-"]').forEach(b=>b.classList.remove('on'));
   document.getElementById(`sbi-${pg}`)?.classList.add('on');
   document.getElementById(`mnb-${pg}`)?.classList.add('on');
-  // Show loja sub-menu in drawer when on loja page
-  const sub=document.getElementById('adLojaSubMenu');
-  if(sub) sub.style.display=pg==='loja'?'block':'none';
+
   if(pg==='encs')renderEncs();
   if(pg==='prods')renderProds();
   if(pg==='cats')renderCats();
@@ -800,7 +792,13 @@ async function saveProd(){
     if(d.erro){toast(`Erro: ${d.erro}`,'err');return;}
     inval();toast(id?'✓ Produto actualizado! Aparece em ~30s':'✓ Produto criado! Aparece em ~30s','ok');
     fechM('mP');await carProds();renderProds();renderDash();carStats();
-  }catch(e){toast(`Erro de ligação: ${e.message}`,'err');}
+  }catch(e){
+    if(e.message==='Failed to fetch'){
+      toast('Erro: não foi possível ligar ao Worker. Verifica se o Worker está activo.','err');
+    } else {
+      toast(`Erro: ${e.message}`,'err');
+    }
+  }
 }
 
 async function delP(id,nome){
@@ -933,15 +931,19 @@ function renderLojaForm(){cfgT(_cfgS);}
 function cfgT(sec,btn){
   // Update section header label
   const secMeta={
-    id:{ico:'🏪',nome:'Identidade'},ct:{ico:'📞',nome:'Contactos'},
-    ent:{ico:'🚚',nome:'Entrega'},hor:{ico:'🕐',nome:'Horários'},
-    vis:{ico:'🎨',nome:'Visual & GitHub'},not:{ico:'🔔',nome:'Notificações'},
-    seo:{ico:'🔍',nome:'SEO & Legal'},sec:{ico:'🔐',nome:'Segurança'}
+    id:{ico:'fa-solid fa-store',nome:'Identidade'},
+    ct:{ico:'fa-solid fa-phone',nome:'Contactos'},
+    ent:{ico:'fa-solid fa-truck',nome:'Entrega'},
+    hor:{ico:'fa-regular fa-clock',nome:'Horários'},
+    vis:{ico:'fa-solid fa-palette',nome:'Visual & GitHub'},
+    not:{ico:'fa-solid fa-bell',nome:'Notificações'},
+    seo:{ico:'fa-solid fa-magnifying-glass',nome:'SEO & Legal'},
+    sec:{ico:'fa-solid fa-shield-halved',nome:'Segurança'}
   };
-  const m=secMeta[sec]||{ico:'⚙',nome:'Configurações'};
+  const m=secMeta[sec]||{ico:'fa-solid fa-gear',nome:'Configurações'};
   const icoEl=document.getElementById('cfgSecIco');
   const nomeEl=document.getElementById('cfgSecNome');
-  if(icoEl)icoEl.textContent=m.ico;
+  if(icoEl)icoEl.innerHTML='<i class="'+m.ico+'"></i>';
   if(nomeEl)nomeEl.textContent=m.nome;
   _cfgS=sec;
   const l=_loja;
